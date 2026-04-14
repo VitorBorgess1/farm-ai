@@ -1,0 +1,1 @@
+Desenvolver uma plataforma integrada de monitoramento e gestão inteligente do solo para o setor agrícola. O sistema visa automatizar a coleta e análise de dados edáficos (do solo), substituindo processos manuais por uma solução escalável que otimize a tomada de decisão, aumente a produtividade da safra e reduza o desperdício de insumos.
