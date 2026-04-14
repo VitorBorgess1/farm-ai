@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Alerts | FarmAI Agricultural Intelligence</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary-fixed": "#b1f0ce",
+              "secondary": "#536528",
+              "inverse-on-surface": "#f8efea",
+              "on-error": "#ffffff",
+              "background": "#fff8f5",
+              "on-secondary-fixed": "#151f00",
+              "on-primary": "#ffffff",
+              "inverse-surface": "#34302c",
+              "on-primary-fixed-variant": "#0e5138",
+              "primary": "#002d1c",
+              "on-surface-variant": "#414844",
+              "surface-tint": "#2c694e",
+              "on-secondary-fixed-variant": "#3c4c12",
+              "secondary-fixed-dim": "#bacf86",
+              "surface-container": "#f5ece7",
+              "primary-container": "#00452e",
+              "on-error-container": "#93000a",
+              "tertiary": "#3b1f00",
+              "on-secondary-container": "#57692c",
+              "tertiary-fixed-dim": "#f0bd8b",
+              "surface-container-lowest": "#ffffff",
+              "on-tertiary-container": "#cd9d6d",
+              "on-background": "#1f1b18",
+              "inverse-primary": "#95d4b3",
+              "outline-variant": "#c1c8c2",
+              "on-secondary": "#ffffff",
+              "tertiary-container": "#56340e",
+              "secondary-fixed": "#d6eba0",
+              "surface-container-low": "#fbf2ed",
+              "surface": "#fff8f5",
+              "surface-dim": "#e1d8d3",
+              "on-primary-fixed": "#002114",
+              "error-container": "#ffdad6",
+              "outline": "#717973",
+              "surface-container-high": "#efe6e1",
+              "primary-fixed-dim": "#95d4b3",
+              "surface-variant": "#eae1dc",
+              "on-tertiary-fixed-variant": "#623f18",
+              "tertiary-fixed": "#ffdcbd",
+              "on-surface": "#1f1b18",
+              "secondary-container": "#d3e89d",
+              "on-primary-container": "#76b394",
+              "error": "#ba1a1a",
+              "on-tertiary": "#ffffff",
+              "on-tertiary-fixed": "#2c1600",
+              "surface-bright": "#fff8f5",
+              "surface-container-highest": "#eae1dc"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "3xl": "1.5rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      .glass-header {
+        background: rgba(255, 248, 245, 0.8);
+        backdrop-filter: blur(24px);
+      }
+      body {
+        font-family: 'Inter', sans-serif;
+        background-color: #fff8f5;
+      }
+      h1, h2, h3, .brand-font {
+        font-family: 'Manrope', sans-serif;
+      }
+    </style>
+</head>
+<body class="text-on-background antialiased min-h-screen">
+<!-- SideNavBar (Shared Component) -->
+<aside class="hidden lg:flex flex-col fixed left-0 top-0 h-full py-8 px-4 h-screen w-64 border-r-0 bg-stone-50 dark:bg-stone-950 z-50">
+<div class="flex items-center gap-3 px-2 mb-10">
+<div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-primary-fixed">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">eco</span>
+</div>
+<div>
+<h1 class="font-manrope text-2xl font-black text-emerald-900 dark:text-emerald-500 leading-none">FarmAI</h1>
+<p class="text-[10px] uppercase tracking-widest text-stone-500 font-bold">Agricultural Intel</p>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all ease-in-out duration-300 text-stone-500 dark:text-stone-400 hover:text-emerald-700 dark:hover:text-emerald-300 hover:bg-stone-100 dark:hover:bg-stone-900 font-inter text-sm font-semibold" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all ease-in-out duration-300 text-stone-500 dark:text-stone-400 hover:text-emerald-700 dark:hover:text-emerald-300 hover:bg-stone-100 dark:hover:bg-stone-900 font-inter text-sm font-semibold" href="#">
+<span class="material-symbols-outlined">monitoring</span>
+<span>Monitoring</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all ease-in-out duration-300 text-stone-500 dark:text-stone-400 hover:text-emerald-700 dark:hover:text-emerald-300 hover:bg-stone-100 dark:hover:bg-stone-900 font-inter text-sm font-semibold" href="#">
+<span class="material-symbols-outlined">psychology</span>
+<span>AI Insights</span>
+</a>
+<!-- Active Navigation: Alerts -->
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all ease-in-out duration-300 text-emerald-900 dark:text-emerald-400 border-r-4 border-emerald-600 bg-emerald-50/50 dark:bg-emerald-900/10 font-inter text-sm font-semibold" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">notifications_active</span>
+<span>Alerts</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all ease-in-out duration-300 text-stone-500 dark:text-stone-400 hover:text-emerald-700 dark:hover:text-emerald-300 hover:bg-stone-100 dark:hover:bg-stone-900 font-inter text-sm font-semibold" href="#">
+<span class="material-symbols-outlined">router</span>
+<span>Devices</span>
+</a>
+</nav>
+<div class="mt-auto space-y-1 pt-6 border-t border-stone-100 dark:border-stone-900">
+<button class="w-full mb-6 bg-gradient-to-br from-primary to-primary-container text-white py-3 px-4 rounded-xl font-bold flex items-center justify-center gap-2 active:scale-95 duration-200">
+<span class="material-symbols-outlined text-sm">add</span>
+<span>Add New Sensor</span>
+</button>
+<a class="flex items-center gap-3 px-4 py-2 rounded-xl text-stone-500 font-inter text-sm font-semibold hover:bg-stone-100 transition-colors" href="#">
+<span class="material-symbols-outlined">help</span>
+<span>Support</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 rounded-xl text-stone-500 font-inter text-sm font-semibold hover:bg-stone-100 transition-colors" href="#">
+<span class="material-symbols-outlined">person</span>
+<span>Account</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="lg:ml-64 min-h-screen">
+<!-- TopAppBar (Shared Component) -->
+<header class="fixed top-0 right-0 left-0 lg:left-64 z-40 flex justify-between items-center h-16 px-6 w-full bg-emerald-50/80 dark:bg-stone-950/80 backdrop-blur-xl shadow-sm dark:shadow-none">
+<div class="flex items-center gap-4">
+<div class="lg:hidden text-xl font-bold tracking-tight text-emerald-950">FarmAI</div>
+<div class="hidden md:flex items-center gap-2 bg-emerald-100/50 dark:bg-stone-900/50 px-4 py-1.5 rounded-full">
+<span class="material-symbols-outlined text-stone-500 text-sm">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm w-48 font-inter placeholder:text-stone-400" placeholder="Search events..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 rounded-full hover:bg-emerald-100/50 dark:hover:bg-stone-800 transition-colors active:scale-95 duration-200 text-stone-600">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 rounded-full hover:bg-emerald-100/50 dark:hover:bg-stone-800 transition-colors active:scale-95 duration-200 text-stone-600">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="h-8 w-8 rounded-full bg-surface-container overflow-hidden">
+<img alt="User profile avatar" class="w-full h-full object-cover" data-alt="Close up portrait of a middle aged man with short hair smiling warmly in professional casual attire" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDpQAQ61Z_5RBLzT1EeRAYZQOd9yYgiefLU5Is8SnZjLTK6wn4P_JS_RNnjC3FJuueO3IyYfdMEvVddLSpVSw3DSdwFwpPTb5ZTJK2BexH5-3WvszNFs02YQzPFnXUwtuknHBtNmvv8U5q3geHjUjr27JhxXpHIrgxfGZ2yzedcLUx9O185R9zLuR4jxCDcEjDiPZwqhD1qbrmJpMnDO3jDjFf3ZXPIdD9wlReuUk_4npC8LaUdLP05-F09xS43HAnwWJm9ddAA0F7_"/>
+</div>
+</div>
+</header>
+<!-- Page Content -->
+<div class="pt-24 pb-12 px-6 lg:px-12 max-w-7xl mx-auto">
+<!-- Hero Header Section -->
+<div class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div class="max-w-xl">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container text-xs font-bold mb-4">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                        LIVE STATUS: MONITORING ACTIVE
+                    </div>
+<h2 class="text-4xl lg:text-5xl font-extrabold tracking-tight text-on-background mb-4">Intelligence Center</h2>
+<p class="text-on-surface-variant leading-relaxed font-body">Real-time alerts and historical event logs for your precision agriculture network. Our AI identifies anomalies before they become crop failures.</p>
+</div>
+<div class="flex gap-3">
+<button class="px-6 py-3 rounded-2xl bg-surface-container-highest text-on-surface font-semibold text-sm hover:brightness-95 transition-all">
+                        Export Logs
+                    </button>
+<button class="px-6 py-3 rounded-2xl bg-gradient-to-r from-primary to-primary-container text-white font-semibold text-sm shadow-md active:scale-95 transition-all">
+                        Mute All
+                    </button>
+</div>
+</div>
+<!-- Bento Grid Layout for Alerts -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+<!-- Left Column: Critical Feed -->
+<div class="md:col-span-8 space-y-6">
+<div class="flex items-center justify-between mb-2">
+<h3 class="text-xl font-bold text-on-background">Active Urgencies</h3>
+<span class="text-xs font-bold text-error uppercase tracking-widest">3 Priority Actions</span>
+</div>
+<!-- CRITICAL ALERT CARD -->
+<div class="group relative overflow-hidden bg-white rounded-3xl p-6 shadow-sm border border-transparent hover:border-error/20 transition-all">
+<div class="absolute top-0 right-0 w-32 h-32 bg-error/5 rounded-bl-full -mr-10 -mt-10 blur-2xl"></div>
+<div class="flex flex-col sm:flex-row gap-5 relative z-10">
+<div class="flex-shrink-0 w-14 h-14 rounded-2xl bg-error-container flex items-center justify-center text-error">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">warning</span>
+</div>
+<div class="flex-1">
+<div class="flex items-center justify-between mb-1">
+<span class="text-error font-bold text-xs uppercase tracking-tighter">Urgency: Critical</span>
+<span class="text-on-surface-variant text-xs font-medium">2 mins ago</span>
+</div>
+<h4 class="text-xl font-bold text-on-background mb-1">Critical Low Humidity - Sector 3</h4>
+<p class="text-on-surface-variant text-sm mb-4">Soil moisture levels dropped below 12% in the North-East Vineyard section. Automated irrigation failed to trigger.</p>
+<div class="flex flex-wrap gap-2">
+<button class="px-4 py-2 rounded-xl bg-error text-white text-xs font-bold hover:bg-error/90 transition-colors">Start Irrigation</button>
+<button class="px-4 py-2 rounded-xl bg-surface-container-low text-on-surface text-xs font-bold hover:bg-surface-container transition-colors">Dispatch Technician</button>
+</div>
+</div>
+</div>
+</div>
+<!-- WARNING ALERT CARD -->
+<div class="group relative overflow-hidden bg-white rounded-3xl p-6 shadow-sm border border-transparent hover:border-tertiary-fixed-dim/30 transition-all">
+<div class="flex flex-col sm:flex-row gap-5 relative z-10">
+<div class="flex-shrink-0 w-14 h-14 rounded-2xl bg-tertiary-fixed text-on-tertiary-fixed flex items-center justify-center">
+<span class="material-symbols-outlined text-3xl">thermostat</span>
+</div>
+<div class="flex-1">
+<div class="flex items-center justify-between mb-1">
+<span class="text-on-tertiary-fixed-variant font-bold text-xs uppercase tracking-tighter">Urgency: High</span>
+<span class="text-on-surface-variant text-xs font-medium">45 mins ago</span>
+</div>
+<h4 class="text-xl font-bold text-on-background mb-1">Abnormal Heat Signature - Greenhouse B</h4>
+<p class="text-on-surface-variant text-sm mb-4">Ambient temperature is 4°C above predicted diurnal curve. Potential ventilation malfunction detected.</p>
+<div class="flex items-center gap-4">
+<div class="flex -space-x-2">
+<div class="w-8 h-8 rounded-full border-2 border-white bg-surface-container overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Close up of lush green tomato leaves in a modern hydroponic greenhouse" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCaVVZzgKkCbxUnRGPLBZ58nLtjDP_j18peAMnjihfGw6W8nCvdNC_GxqYL4L0_eR_2eUopJctBlum3dB3OuiQ59J2OcnY8f7kaUNAub14LBLUoGbImTy1yUndc8AOrYbdGXs9e_o-GGGqqRixqtHuUcL5Iuz95U-vhKmeFxwMqzOVl5BkhqkpNsXdSg-V6497tq3WKVJt4To9ixSTlXsK7vtmHpC79f_g9iV_e8QIgJw3ZAE3IbWaqLjSpEC4rlK1kj40ErtKrrmt2"/>
+</div>
+</div>
+<span class="text-xs text-on-surface-variant italic">Impact: Tomato crops (High Risk)</span>
+</div>
+</div>
+</div>
+</div>
+<!-- RESOLVED FEED SECTION -->
+<div class="pt-6">
+<h3 class="text-xl font-bold text-on-background mb-6">Resolved Recently</h3>
+<div class="space-y-4">
+<!-- RESOLVED ITEM 1 -->
+<div class="flex items-center gap-4 p-4 rounded-2xl bg-surface-container-low/50 group hover:bg-white hover:shadow-sm transition-all">
+<div class="w-10 h-10 rounded-xl bg-secondary-container flex items-center justify-center text-on-secondary-container">
+<span class="material-symbols-outlined text-xl">check_circle</span>
+</div>
+<div class="flex-1">
+<h5 class="text-sm font-bold text-on-background">System Update Completed</h5>
+<p class="text-xs text-on-surface-variant">Central Hub v4.2 deployment successful across all 12 zones.</p>
+</div>
+<div class="text-right">
+<span class="block text-xs font-bold text-on-surface-variant">Today</span>
+<span class="block text-[10px] text-outline">09:12 AM</span>
+</div>
+</div>
+<!-- RESOLVED ITEM 2 -->
+<div class="flex items-center gap-4 p-4 rounded-2xl bg-surface-container-low/50 group hover:bg-white hover:shadow-sm transition-all">
+<div class="w-10 h-10 rounded-xl bg-secondary-container flex items-center justify-center text-on-secondary-container">
+<span class="material-symbols-outlined text-xl">check_circle</span>
+</div>
+<div class="flex-1">
+<h5 class="text-sm font-bold text-on-background">Pump Calibration - Zone 1</h5>
+<p class="text-xs text-on-surface-variant">Flow rate discrepancy resolved. Manual override released.</p>
+</div>
+<div class="text-right">
+<span class="block text-xs font-bold text-on-surface-variant">Yesterday</span>
+<span class="block text-[10px] text-outline">04:30 PM</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Stats & Context -->
+<div class="md:col-span-4 space-y-6">
+<!-- Stats Card -->
+<div class="bg-primary text-white p-8 rounded-[2rem] shadow-xl relative overflow-hidden">
+<div class="absolute -right-8 -bottom-8 w-40 h-40 bg-primary-container rounded-full opacity-50 blur-3xl"></div>
+<h3 class="text-lg font-bold mb-6 opacity-80">Weekly Summary</h3>
+<div class="space-y-6 relative z-10">
+<div>
+<div class="flex justify-between items-end mb-1">
+<span class="text-sm font-medium opacity-70">Uptime Efficiency</span>
+<span class="text-2xl font-black">99.8%</span>
+</div>
+<div class="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary-fixed h-full w-[99.8%]"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between items-end mb-1">
+<span class="text-sm font-medium opacity-70">Incidents Resolved</span>
+<span class="text-2xl font-black">24/27</span>
+</div>
+<div class="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
+<div class="bg-secondary-fixed h-full w-[88%]"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Sector Status Widget -->
+<div class="bg-surface-container p-6 rounded-[2rem]">
+<h3 class="text-sm font-bold text-on-surface mb-4 uppercase tracking-widest">Sector Integrity</h3>
+<div class="space-y-3">
+<div class="flex items-center justify-between p-3 rounded-2xl bg-white/50">
+<div class="flex items-center gap-3">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span class="text-sm font-semibold">Sector 1 (Corn)</span>
+</div>
+<span class="text-xs font-bold text-primary">OPTIMAL</span>
+</div>
+<div class="flex items-center justify-between p-3 rounded-2xl bg-white/50">
+<div class="flex items-center gap-3">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span class="text-sm font-semibold">Sector 2 (Wheat)</span>
+</div>
+<span class="text-xs font-bold text-primary">OPTIMAL</span>
+</div>
+<div class="flex items-center justify-between p-3 rounded-2xl bg-error/10">
+<div class="flex items-center gap-3">
+<span class="w-2 h-2 rounded-full bg-error"></span>
+<span class="text-sm font-semibold">Sector 3 (Vineyard)</span>
+</div>
+<span class="text-xs font-bold text-error">CRITICAL</span>
+</div>
+</div>
+</div>
+<!-- Visual Data Insight -->
+<div class="rounded-[2rem] overflow-hidden group">
+<div class="relative h-48">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" data-alt="Aerial view of perfectly aligned green crop fields with organic patterns and farm paths" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCj-lIwMmzlZ5WKlMBFxp2Jh2wc2i8W2yQbcnkIScYMZrpXFQNZFstSIksf3UqMOhU59rYJqvHXTHXsRBO_y3rQOkzYN8cTXyX-iinGhzaw3Nvr-i-g6QDViQl25T6H4x_vHi7vdMtyJKNGI7r_OQHBvOZgkl0ipgO9nstYUvBGPPLODQ9xMkSSqAeisy_tIWOFFhbvEzkV8bIbc-mwzSkevox9J2Mv5e54thPTUhR2jYicCfHahZw0hsO8NdoTw_9kEZycPcmCFpZd"/>
+<div class="absolute inset-0 bg-gradient-to-t from-on-background/80 to-transparent flex items-end p-6">
+<div>
+<span class="text-primary-fixed text-[10px] font-black uppercase tracking-widest">Satellite Intel</span>
+<p class="text-white text-sm font-bold">Moisture variance detected in North Ridge.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Shared Component - Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full bg-emerald-50/90 backdrop-blur-xl border-t-0 flex justify-around items-center h-16 px-4 z-50">
+<a class="flex flex-col items-center justify-center gap-1 text-stone-600" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-[10px] font-bold">Dash</span>
+</a>
+<a class="flex flex-col items-center justify-center gap-1 text-stone-600" href="#">
+<span class="material-symbols-outlined">monitoring</span>
+<span class="text-[10px] font-bold">Monitor</span>
+</a>
+<a class="flex flex-col items-center justify-center gap-1 text-emerald-700 font-bold" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">notifications_active</span>
+<span class="text-[10px]">Alerts</span>
+</a>
+<a class="flex flex-col items-center justify-center gap-1 text-stone-600" href="#">
+<span class="material-symbols-outlined">psychology</span>
+<span class="text-[10px] font-bold">AI</span>
+</a>
+<a class="flex flex-col items-center justify-center gap-1 text-stone-600" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-[10px] font-bold">Account</span>
+</a>
+</nav>
+</body></html>
