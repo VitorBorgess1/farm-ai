@@ -1,308 +1,247 @@
 <!DOCTYPE html>
-
-<html class="light" lang="pt-br"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>FarmAI | Recomendações IA</title>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<script id="tailwind-config">
-      tailwind.config = {
-        darkMode: "class",
-        theme: {
-          extend: {
-            colors: {
-              "primary-fixed": "#b1f0ce",
-              "secondary": "#536528",
-              "inverse-on-surface": "#f8efea",
-              "on-error": "#ffffff",
-              "background": "#fff8f5",
-              "on-secondary-fixed": "#151f00",
-              "on-primary": "#ffffff",
-              "inverse-surface": "#34302c",
-              "on-primary-fixed-variant": "#0e5138",
-              "primary": "#002d1c",
-              "on-surface-variant": "#414844",
-              "surface-tint": "#2c694e",
-              "on-secondary-fixed-variant": "#3c4c12",
-              "secondary-fixed-dim": "#bacf86",
-              "surface-container": "#f5ece7",
-              "primary-container": "#00452e",
-              "on-error-container": "#93000a",
-              "tertiary": "#3b1f00",
-              "on-secondary-container": "#57692c",
-              "tertiary-fixed-dim": "#f0bd8b",
-              "surface-container-lowest": "#ffffff",
-              "on-tertiary-container": "#cd9d6d",
-              "on-background": "#1f1b18",
-              "inverse-primary": "#95d4b3",
-              "outline-variant": "#c1c8c2",
-              "on-secondary": "#ffffff",
-              "tertiary-container": "#56340e",
-              "secondary-fixed": "#d6eba0",
-              "surface-container-low": "#fbf2ed",
-              "surface": "#fff8f5",
-              "surface-dim": "#e1d8d3",
-              "on-primary-fixed": "#002114",
-              "error-container": "#ffdad6",
-              "outline": "#717973",
-              "surface-container-high": "#efe6e1",
-              "primary-fixed-dim": "#95d4b3",
-              "surface-variant": "#eae1dc",
-              "on-tertiary-fixed-variant": "#623f18",
-              "tertiary-fixed": "#ffdcbd",
-              "on-surface": "#1f1b18",
-              "secondary-container": "#d3e89d",
-              "on-primary-container": "#76b394",
-              "error": "#ba1a1a",
-              "on-tertiary": "#ffffff",
-              "on-tertiary-fixed": "#2c1600",
-              "surface-bright": "#fff8f5",
-              "surface-container-highest": "#eae1dc"
-            },
-            fontFamily: {
-              "headline": ["Manrope"],
-              "body": ["Inter"],
-              "label": ["Inter"]
-            },
-            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1.5rem", "full": "9999px"},
-          },
-        },
-      }
-    </script>
-<style>
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-        }
-        body { font-family: 'Inter', sans-serif; }
-        h1, h2, h3, .brand-font { font-family: 'Manrope', sans-serif; }
-    </style>
+<html class="light" lang="pt-br">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>FarmAI | Recomendações IA</title>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../css/style.css"/>
 </head>
-<body class="bg-background text-on-background min-h-screen">
-<!-- SideNavBar -->
-<aside class="hidden lg:flex flex-col fixed left-0 top-0 h-full py-8 px-4 h-screen w-64 border-r-0 bg-stone-50 dark:bg-stone-950 z-40">
-<div class="mb-10 px-4">
-<div class="flex items-center gap-3">
-<div class="w-10 h-10 bg-primary-container rounded-xl flex items-center justify-center">
-<span class="material-symbols-outlined text-primary-fixed" data-icon="psychology">psychology</span>
-</div>
-<div>
-<h1 class="font-manrope text-2xl font-black text-emerald-900 dark:text-emerald-500">FarmAI</h1>
-<p class="text-xs font-inter font-semibold text-stone-500 dark:text-stone-400">Agricultural Intel</p>
-</div>
-</div>
-</div>
-<nav class="flex-1 space-y-1">
-<a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all ease-in-out duration-300 text-stone-500 dark:text-stone-400 hover:text-emerald-700 dark:hover:text-emerald-300 hover:bg-stone-100 dark:hover:bg-stone-900 font-inter text-sm font-semibold" href="#">
-<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
-                Dashboard
-            </a>
-<a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all ease-in-out duration-300 text-stone-500 dark:text-stone-400 hover:text-emerald-700 dark:hover:text-emerald-300 hover:bg-stone-100 dark:hover:bg-stone-900 font-inter text-sm font-semibold" href="#">
-<span class="material-symbols-outlined" data-icon="monitoring">monitoring</span>
-                Monitoring
-            </a>
-<a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all ease-in-out duration-300 text-emerald-900 dark:text-emerald-400 border-r-4 border-emerald-600 bg-emerald-50/50 dark:bg-emerald-900/10 font-inter text-sm font-semibold" href="#">
-<span class="material-symbols-outlined" data-icon="psychology" style="font-variation-settings: 'FILL' 1;">psychology</span>
-                AI Insights
-            </a>
-<a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all ease-in-out duration-300 text-stone-500 dark:text-stone-400 hover:text-emerald-700 dark:hover:text-emerald-300 hover:bg-stone-100 dark:hover:bg-stone-900 font-inter text-sm font-semibold" href="#">
-<span class="material-symbols-outlined" data-icon="notifications_active">notifications_active</span>
-                Alerts
-            </a>
-<a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all ease-in-out duration-300 text-stone-500 dark:text-stone-400 hover:text-emerald-700 dark:hover:text-emerald-300 hover:bg-stone-100 dark:hover:bg-stone-900 font-inter text-sm font-semibold" href="#">
-<span class="material-symbols-outlined" data-icon="router">router</span>
-                Devices
-            </a>
-</nav>
-<div class="mt-auto space-y-1">
-<button class="w-full mb-6 bg-primary-container text-on-primary-container py-3 px-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
-<span class="material-symbols-outlined" data-icon="add">add</span>
-                Add New Sensor
-            </button>
-<a class="flex items-center gap-3 px-4 py-2 rounded-xl text-stone-500 font-inter text-sm font-semibold hover:bg-stone-100" href="#">
-<span class="material-symbols-outlined" data-icon="help">help</span>
-                Support
-            </a>
-<a class="flex items-center gap-3 px-4 py-2 rounded-xl text-stone-500 font-inter text-sm font-semibold hover:bg-stone-100" href="#">
-<span class="material-symbols-outlined" data-icon="person">person</span>
-                Account
-            </a>
-</div>
-</aside>
-<!-- Main Content Wrapper -->
-<main class="lg:ml-64 min-h-screen">
-<!-- TopNavBar -->
-<header class="fixed top-0 right-0 left-0 lg:left-64 z-50 bg-emerald-50/80 dark:bg-stone-950/80 backdrop-blur-xl flex justify-between items-center h-16 px-6 shadow-sm dark:shadow-none">
-<div class="flex items-center gap-4">
-<span class="text-xl font-bold tracking-tight text-emerald-950 dark:text-emerald-50 lg:hidden">FarmAI</span>
-<div class="hidden md:flex items-center bg-emerald-100/50 dark:bg-stone-900/50 px-4 py-1.5 rounded-full">
-<span class="material-symbols-outlined text-stone-500 text-sm" data-icon="search">search</span>
-<input class="bg-transparent border-none focus:ring-0 text-sm font-manrope text-stone-600 w-64" placeholder="Search insights..." type="text"/>
-</div>
-</div>
-<div class="flex items-center gap-4">
-<button class="p-2 rounded-full text-stone-600 dark:text-stone-400 hover:bg-emerald-100/50 transition-colors active:scale-95 duration-200">
-<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
-</button>
-<button class="p-2 rounded-full text-stone-600 dark:text-stone-400 hover:bg-emerald-100/50 transition-colors active:scale-95 duration-200">
-<span class="material-symbols-outlined" data-icon="settings">settings</span>
-</button>
-<div class="w-8 h-8 rounded-full overflow-hidden bg-emerald-200">
-<img alt="User profile avatar" class="w-full h-full object-cover" data-alt="portrait of a professional agronomist in a sunlit office, confident smile, soft natural lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBmtgg9jXkui3e9VYEf4sS5FBSfOipi-0s1sFgVeQBNNDtxwAD1D4ByKrjNABFK3HOqdH_AgDtzm9BvB8G3OcO32OTKf6thmSiTOBD4NTKUnNDPoic6tmId3gZkxuEa8-eGP-Tf5dyoR9Y97dFPlDWzaYQE2BKUq11hV3BG143N-ZTSLb4V6ARBi0cOw76dxPtYJYuZNDJuX-I4Z8fdjUmJ5ACLY8YtNCMlSORgxrtwfMsovBi4jQXqQKtebZa68rielTYhgMCS7lF0"/>
-</div>
-</div>
-</header>
-<!-- Content Canvas -->
-<div class="pt-24 px-6 pb-12 max-w-7xl mx-auto">
-<!-- Hero Header Section -->
-<div class="mb-12 relative overflow-hidden rounded-2xl bg-primary-container p-8 md:p-12 text-white shadow-xl">
-<div class="absolute inset-0 opacity-20 pointer-events-none">
-<img alt="Aerial farm background" class="w-full h-full object-cover" data-alt="lush green aerial view of geometrically aligned crop fields at dawn with a light mist and soft morning glow" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBwSpy4FkznVizvYw5A2bbe8ZDsZ5VyEbNo03kq5Ec_MvmDhAqX7G36WV-8IMRNwSQ08NhOefZJw7P8JR_mKySc9sR8Kbd_ml21a70SP6uxxYVfZ9gKnYeE0lky4pKFFU3s4IJJqLwl6plKABd2hLidUjI9Vh0oMBC2gK-n8O046Itv_oBSDA1e1QW8c0a6bfL2g9EzUGHTjtKtjHEjTk4FxVN6MjMp9sh0GZ9bdM2iKaCcsRCONS8QPNYVRVyrAgJ-l6vfwbrUaMkV"/>
-</div>
-<div class="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
-<div>
-<span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-fixed/20 text-primary-fixed text-xs font-bold tracking-widest uppercase mb-4">
-<span class="material-symbols-outlined text-sm" data-icon="auto_awesome">auto_awesome</span>
-                            AI engine active
-                        </span>
-<h2 class="text-4xl md:text-5xl font-extrabold font-manrope tracking-tight leading-tight">Recomendações <br/>Inteligentes</h2>
-<p class="mt-4 text-emerald-100/80 max-w-md font-body">Análise em tempo real de solo, clima e sensores para otimizar sua produção hoje.</p>
-</div>
-<div class="flex gap-4">
-<div class="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/5">
-<p class="text-xs text-emerald-200 uppercase font-bold">Health Score</p>
-<p class="text-2xl font-bold font-manrope">94%</p>
-</div>
-<div class="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/5">
-<p class="text-xs text-emerald-200 uppercase font-bold">Savings Est.</p>
-<p class="text-2xl font-bold font-manrope">R$ 4.2k</p>
-</div>
-</div>
-</div>
-</div>
-<!-- Bento Grid Recommendations -->
-<div class="grid grid-cols-1 md:grid-cols-12 gap-6">
-<!-- High Priority: Irrigation (Large Card) -->
-<div class="md:col-span-8 bg-surface-container-low rounded-2xl p-8 transition-all hover:bg-surface-container duration-300 group">
-<div class="flex justify-between items-start mb-6">
-<div class="p-3 bg-error-container rounded-2xl">
-<span class="material-symbols-outlined text-error text-3xl" data-icon="water_drop">water_drop</span>
-</div>
-<span class="px-4 py-1 rounded-full bg-error-container text-on-error-container text-xs font-bold uppercase tracking-wider">High Priority</span>
-</div>
-<h3 class="text-2xl font-bold text-on-surface mb-2 font-manrope">Irrigation Recommended in the next 12h</h3>
-<p class="text-on-surface-variant mb-8 leading-relaxed">
-                        Expected evaporation rates in Zone A are spiking due to high winds and 32°C temps. Soils are at 22% moisture capacity.
-                    </p>
-<div class="flex flex-wrap items-center gap-4">
-<button class="bg-primary hover:bg-primary-container text-white px-6 py-3 rounded-xl font-bold transition-all active:scale-95 flex items-center gap-2">
-                            Acknowledge
-                        </button>
-<button class="bg-surface-container-highest text-on-surface px-6 py-3 rounded-xl font-bold transition-all hover:bg-surface-dim active:scale-95">
-                            See details
-                        </button>
-</div>
-</div>
-<!-- Medium Priority: Soil pH (Small Card) -->
-<div class="md:col-span-4 bg-surface-container-low rounded-2xl p-8 flex flex-col justify-between transition-all hover:bg-surface-container duration-300">
-<div>
-<div class="flex justify-between items-start mb-6">
-<div class="p-3 bg-secondary-container rounded-2xl">
-<span class="material-symbols-outlined text-on-secondary-container text-3xl" data-icon="science">science</span>
-</div>
-<span class="px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container text-[10px] font-bold uppercase">Medium</span>
-</div>
-<h3 class="text-xl font-bold text-on-surface mb-2 font-manrope">Optimal pH levels detected</h3>
-<p class="text-sm text-on-surface-variant leading-relaxed">Zone C is perfectly balanced at 6.5 pH. No corrective action needed for this cycle.</p>
-</div>
-<div class="mt-8">
-<button class="w-full py-2.5 text-secondary font-bold text-sm border-2 border-secondary/20 rounded-xl hover:bg-secondary/5 transition-colors">
-                            View Soil Report
-                        </button>
-</div>
-</div>
-<!-- Medium Priority: Fertilizer (Full Width List-style within Bento) -->
-<div class="md:col-span-12 bg-surface-container-low rounded-2xl overflow-hidden">
-<div class="p-8 border-b border-outline-variant/10">
-<div class="flex items-center gap-4 mb-4">
-<div class="p-3 bg-tertiary-fixed text-on-tertiary-fixed rounded-2xl">
-<span class="material-symbols-outlined text-3xl" data-icon="grass">grass</span>
-</div>
-<div>
-<h3 class="text-xl font-bold text-on-surface font-manrope">Nutrient Management</h3>
-<p class="text-sm text-on-surface-variant">Recommended actions for fertilization optimization</p>
-</div>
-</div>
-</div>
-<div class="divide-y divide-outline-variant/10">
-<!-- Recommendation Item 1 -->
-<div class="p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:bg-surface-container transition-colors">
-<div class="flex items-start gap-4">
-<div class="mt-1 w-2 h-2 rounded-full bg-tertiary"></div>
-<div>
-<h4 class="font-bold text-on-surface">Apply fertilizer for Zone B</h4>
-<p class="text-sm text-on-surface-variant mt-1">Nitrogen levels trending low. Optimal window: next 48 hours before predicted rain.</p>
-</div>
-</div>
-<div class="flex items-center gap-3">
-<span class="px-4 py-1.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed-variant text-[10px] font-bold uppercase tracking-tighter">Medium Priority</span>
-<button class="p-2 text-primary hover:bg-primary/5 rounded-full">
-<span class="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>
-</button>
-</div>
-</div>
-<!-- Recommendation Item 2 -->
-<div class="p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 hover:bg-surface-container transition-colors">
-<div class="flex items-start gap-4">
-<div class="mt-1 w-2 h-2 rounded-full bg-secondary"></div>
-<div>
-<h4 class="font-bold text-on-surface">Pest Detection: Low Risk</h4>
-<p class="text-sm text-on-surface-variant mt-1">Satellite imagery shows no abnormal thermal signatures. Maintain current schedule.</p>
-</div>
-</div>
-<div class="flex items-center gap-3">
-<span class="px-4 py-1.5 rounded-full bg-secondary-container text-on-secondary-container text-[10px] font-bold uppercase tracking-tighter">Low Priority</span>
-<button class="p-2 text-primary hover:bg-primary/5 rounded-full">
-<span class="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>
-</button>
-</div>
-</div>
-</div>
-</div>
-<!-- Extra Insights Grid -->
-<div class="md:col-span-6 bg-surface-container-low rounded-2xl p-6 transition-all hover:bg-surface-container">
-<div class="flex items-center gap-3 mb-4">
-<span class="material-symbols-outlined text-primary" data-icon="calendar_today">calendar_today</span>
-<h4 class="font-bold font-manrope text-on-surface">Weekly Forecast Action</h4>
-</div>
-<p class="text-on-surface-variant text-sm mb-6 leading-relaxed">
-                        Higher humidity predicted for Wednesday. AI suggests monitoring for fungal growth in Zone D (lower elevation).
-                    </p>
-<div class="flex items-center justify-between text-xs font-bold text-stone-500">
-<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm" data-icon="history">history</span> Generated 2h ago</span>
-<a class="text-primary hover:underline" href="#">Read analysis</a>
-</div>
-</div>
-<div class="md:col-span-6 bg-surface-container-low rounded-2xl p-6 transition-all hover:bg-surface-container">
-<div class="flex items-center gap-3 mb-4">
-<span class="material-symbols-outlined text-primary" data-icon="speed">speed</span>
-<h4 class="font-bold font-manrope text-on-surface">Efficiency Metric</h4>
-</div>
-<p class="text-on-surface-variant text-sm mb-6 leading-relaxed">
-                        Automation in Zone B saved 12,000 liters of water this week compared to last month's manual baseline.
-                    </p>
-<div class="flex items-center justify-between text-xs font-bold text-stone-500">
-<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm" data-icon="insights">insights</span> +14% improvement</span>
-<a class="text-primary hover:underline" href="#">Open dashboard</a>
-</div>
-</div>
-</div>
-</div>
-<!-- FAB for Mobile -->
-<button class="md:hidden fixed bottom-6 right-6 w-14 h-14 bg-primary text-white rounded-full shadow-2xl flex items-center justify-center active:scale-90 transition-transform z-50">
-<span class="material-symbols-outlined" data-icon="bolt">bolt</span>
-</button>
-</main>
-</body></html>
+<body>
+
+  <!-- SideNavBar -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">
+        <span class="material-symbols-outlined">psychology</span>
+      </div>
+      <div>
+        <h1 class="brand-name">FarmAI</h1>
+        <p class="brand-sub">Agricultural Intel</p>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a class="nav-link" href="index.html">
+        <span class="material-symbols-outlined">dashboard</span>
+        Dashboard
+      </a>
+      <a class="nav-link" href="monitoring.html">
+        <span class="material-symbols-outlined">monitoring</span>
+        Monitoring
+      </a>
+      <a class="nav-link active" href="ia.html">
+        <span class="material-symbols-outlined filled">psychology</span>
+        AI Insights
+      </a>
+      <a class="nav-link" href="alerts.html">
+        <span class="material-symbols-outlined">notifications_active</span>
+        Alerts
+      </a>
+      <a class="nav-link" href="device.html">
+        <span class="material-symbols-outlined">router</span>
+        Devices
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="btn-add-sensor">
+        <span class="material-symbols-outlined">add</span>
+        Add New Sensor
+      </button>
+      <a class="nav-link-small" href="#">
+        <span class="material-symbols-outlined">help</span>
+        Support
+      </a>
+      <a class="nav-link-small" href="#">
+        <span class="material-symbols-outlined">person</span>
+        Account
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main Content Wrapper -->
+  <main class="main-content">
+
+    <!-- TopNavBar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <span class="topbar-brand-mobile">FarmAI</span>
+        <div class="search-bar">
+          <span class="material-symbols-outlined">search</span>
+          <input type="text" placeholder="Search insights..."/>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <button class="icon-btn">
+          <span class="material-symbols-outlined">notifications</span>
+        </button>
+        <button class="icon-btn">
+          <span class="material-symbols-outlined">settings</span>
+        </button>
+        <div class="avatar">
+          <img alt="User profile avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBmtgg9jXkui3e9VYEf4sS5FBSfOipi-0s1sFgVeQBNNDtxwAD1D4ByKrjNABFK3HOqdH_AgDtzm9BvB8G3OcO32OTKf6thmSiTOBD4NTKUnNDPoic6tmId3gZkxuEa8-eGP-Tf5dyoR9Y97dFPlDWzaYQE2BKUq11hV3BG143N-ZTSLb4V6ARBi0cOw76dxPtYJYuZNDJuX-I4Z8fdjUmJ5ACLY8YtNCMlSORgxrtwfMsovBi4jQXqQKtebZa68rielTYhgMCS7lF0"/>
+        </div>
+      </div>
+    </header>
+
+    <!-- Content Canvas -->
+    <div class="content-canvas">
+
+      <!-- Hero Header Section -->
+      <div class="hero-section">
+        <div class="hero-bg">
+          <img alt="Aerial farm background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBwSpy4FkznVizvYw5A2bbe8ZDsZ5VyEbNo03kq5Ec_MvmDhAqX7G36WV-8IMRNwSQ08NhOefZJw7P8JR_mKySc9sR8Kbd_ml21a70SP6uxxYVfZ9gKnYeE0lky4pKFFU3s4IJJqLwl6plKABd2hLidUjI9Vh0oMBC2gK-n8O046Itv_oBSDA1e1QW8c0a6bfL2g9EzUGHTjtKtjHEjTk4FxVN6MjMp9sh0GZ9bdM2iKaCcsRCONS8QPNYVRVyrAgJ-l6vfwbrUaMkV"/>
+        </div>
+        <div class="hero-inner">
+          <div class="hero-text">
+            <span class="hero-badge">
+              <span class="material-symbols-outlined">auto_awesome</span>
+              AI engine active
+            </span>
+            <h2 class="hero-title">Recomendações <br/>Inteligentes</h2>
+            <p class="hero-desc">Análise em tempo real de solo, clima e sensores para otimizar sua produção hoje.</p>
+          </div>
+          <div class="hero-stats">
+            <div class="stat-card">
+              <p class="stat-label">Health Score</p>
+              <p class="stat-value">94%</p>
+            </div>
+            <div class="stat-card">
+              <p class="stat-label">Savings Est.</p>
+              <p class="stat-value">R$ 4.2k</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bento Grid Recommendations -->
+      <div class="bento-grid">
+
+        <!-- High Priority: Irrigation (Large Card) -->
+        <div class="card card-large">
+          <div class="card-header">
+            <div class="icon-box icon-error">
+              <span class="material-symbols-outlined">water_drop</span>
+            </div>
+            <span class="badge badge-error">High Priority</span>
+          </div>
+          <h3 class="card-title">Irrigation Recommended in the next 12h</h3>
+          <p class="card-desc">
+            Expected evaporation rates in Zone A are spiking due to high winds and 32°C temps. Soils are at 22% moisture capacity.
+          </p>
+          <div class="card-actions">
+            <button class="btn-primary">Acknowledge</button>
+            <button class="btn-secondary">See details</button>
+          </div>
+        </div>
+
+        <!-- Medium Priority: Soil pH (Small Card) -->
+        <div class="card card-small">
+          <div class="card-header">
+            <div class="icon-box icon-secondary">
+              <span class="material-symbols-outlined">science</span>
+            </div>
+            <span class="badge badge-secondary">Medium</span>
+          </div>
+          <h3 class="card-title">Optimal pH levels detected</h3>
+          <p class="card-desc">Zone C is perfectly balanced at 6.5 pH. No corrective action needed for this cycle.</p>
+          <div class="card-footer-btn">
+            <button class="btn-outline">View Soil Report</button>
+          </div>
+        </div>
+
+        <!-- Nutrient Management (Full Width) -->
+        <div class="card card-full">
+          <div class="card-section-header">
+            <div class="icon-box icon-tertiary">
+              <span class="material-symbols-outlined">grass</span>
+            </div>
+            <div>
+              <h3 class="card-title">Nutrient Management</h3>
+              <p class="card-desc-sm">Recommended actions for fertilization optimization</p>
+            </div>
+          </div>
+
+          <div class="recommendation-list">
+            <div class="rec-item">
+              <div class="rec-item-left">
+                <span class="dot dot-tertiary"></span>
+                <div>
+                  <h4 class="rec-title">Apply fertilizer for Zone B</h4>
+                  <p class="rec-desc">Nitrogen levels trending low. Optimal window: next 48 hours before predicted rain.</p>
+                </div>
+              </div>
+              <div class="rec-item-right">
+                <span class="badge badge-tertiary">Medium Priority</span>
+                <button class="icon-btn-round">
+                  <span class="material-symbols-outlined">arrow_forward</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="rec-item">
+              <div class="rec-item-left">
+                <span class="dot dot-secondary"></span>
+                <div>
+                  <h4 class="rec-title">Pest Detection: Low Risk</h4>
+                  <p class="rec-desc">Satellite imagery shows no abnormal thermal signatures. Maintain current schedule.</p>
+                </div>
+              </div>
+              <div class="rec-item-right">
+                <span class="badge badge-secondary">Low Priority</span>
+                <button class="icon-btn-round">
+                  <span class="material-symbols-outlined">arrow_forward</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Extra Insights: Weekly Forecast -->
+        <div class="card card-half">
+          <div class="insight-header">
+            <span class="material-symbols-outlined text-primary">calendar_today</span>
+            <h4 class="insight-title">Weekly Forecast Action</h4>
+          </div>
+          <p class="card-desc">
+            Higher humidity predicted for Wednesday. AI suggests monitoring for fungal growth in Zone D (lower elevation).
+          </p>
+          <div class="insight-footer">
+            <span class="meta-text">
+              <span class="material-symbols-outlined">history</span> Generated 2h ago
+            </span>
+            <a class="link-primary" href="#">Read analysis</a>
+          </div>
+        </div>
+
+        <!-- Extra Insights: Efficiency Metric -->
+        <div class="card card-half">
+          <div class="insight-header">
+            <span class="material-symbols-outlined text-primary">speed</span>
+            <h4 class="insight-title">Efficiency Metric</h4>
+          </div>
+          <p class="card-desc">
+            Automation in Zone B saved 12,000 liters of water this week compared to last month's manual baseline.
+          </p>
+          <div class="insight-footer">
+            <span class="meta-text">
+              <span class="material-symbols-outlined">insights</span> +14% improvement
+            </span>
+            <a class="link-primary" href="index.html">Open dashboard</a>
+          </div>
+        </div>
+
+      </div><!-- /bento-grid -->
+    </div><!-- /content-canvas -->
+  </main>
+
+  <!-- FAB for Mobile -->
+  <button class="fab" id="fab">
+    <span class="material-symbols-outlined">bolt</span>
+  </button>
+
+  <script src="../js/script.js"></script>
+</body>
+</html>
