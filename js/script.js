@@ -302,4 +302,89 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  /* ──────────────────────────────────────────────────────────
+     DEVICES PAGE  (device.html) specific behaviors
+     ────────────────────────────────────────────────────────── */
+
+  /* Device category filter pills */
+  const devFilterPills = document.querySelectorAll('.dev-filter-pill');
+  const devCards = document.querySelectorAll('.dev-grid .dev-card, .dev-grid .dev-card-add');
+
+  devFilterPills.forEach(pill => {
+    pill.addEventListener('click', () => {
+      devFilterPills.forEach(p => p.classList.remove('dev-filter-pill--active'));
+      pill.classList.add('dev-filter-pill--active');
+
+      const type = pill.dataset.type;
+      devCards.forEach(card => {
+        card.style.transition = 'opacity 0.25s';
+        if (type === 'all' || !card.dataset.type || card.dataset.type === type) {
+          card.style.opacity = '1';
+          card.style.pointerEvents = '';
+        } else {
+          card.style.opacity = '0.3';
+          card.style.pointerEvents = 'none';
+        }
+      });
+      console.log(`[FarmAI] Device filter: "${type}"`);
+    });
+  });
+
+  /* Device-specific inline search (separate from topbar search) */
+  const deviceSearchInput = document.getElementById('deviceSearchInput');
+  if (deviceSearchInput) {
+    deviceSearchInput.addEventListener('input', (e) => {
+      const query = e.target.value.toLowerCase().trim();
+      devCards.forEach(card => {
+        card.style.transition = 'opacity 0.25s';
+        card.style.opacity = (!query || card.textContent.toLowerCase().includes(query)) ? '1' : '0.25';
+      });
+
+      /* Also filter log rows */
+      document.querySelectorAll('.dev-log-row').forEach(row => {
+        row.style.transition = 'opacity 0.25s';
+        row.style.opacity = (!query || row.textContent.toLowerCase().includes(query)) ? '1' : '0.25';
+      });
+    });
+  }
+
+  /* Add Device button */
+  const addDeviceBtn = document.getElementById('addDeviceBtn');
+  if (addDeviceBtn) {
+    addDeviceBtn.addEventListener('click', () => {
+      console.log('[FarmAI] Open add device modal');
+      // Future: open QR scan / serial entry modal
+    });
+  }
+
+  /* View full history button */
+  const viewFullHistoryBtn = document.getElementById('viewFullHistoryBtn');
+  if (viewFullHistoryBtn) {
+    viewFullHistoryBtn.addEventListener('click', () => {
+      console.log('[FarmAI] Navigate to full connection log');
+      // Future: navigate to logs page or expand inline
+    });
+  }
+
+  /* Card "more" buttons — per-card context menu stub */
+  document.querySelectorAll('.dev-card-more').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const card = btn.closest('.dev-card');
+      const name = card?.querySelector('.dev-card-name')?.textContent || 'device';
+      console.log(`[FarmAI] Open context menu for: "${name}"`);
+    });
+  });
+
+  /* Also extend unified topbar search to cover device cards */
+  if (searchInput) {
+    searchInput.addEventListener('input', () => {
+      const query = searchInput.value.toLowerCase().trim();
+      document.querySelectorAll('.dev-grid .dev-card').forEach(card => {
+        card.style.transition = 'opacity 0.25s';
+        card.style.opacity = (!query || card.textContent.toLowerCase().includes(query)) ? '1' : '0.35';
+      });
+    });
+  }
+
 });
