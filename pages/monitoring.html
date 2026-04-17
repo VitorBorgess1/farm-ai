@@ -1,348 +1,329 @@
 <!DOCTYPE html>
-
-<html class="light" lang="pt-BR"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>FarmAI - Monitoramento Detalhado</title>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        "primary-fixed": "#b1f0ce",
-                        "secondary": "#536528",
-                        "inverse-on-surface": "#f8efea",
-                        "on-error": "#ffffff",
-                        "background": "#fff8f5",
-                        "on-secondary-fixed": "#151f00",
-                        "on-primary": "#ffffff",
-                        "inverse-surface": "#34302c",
-                        "on-primary-fixed-variant": "#0e5138",
-                        "primary": "#002d1c",
-                        "on-surface-variant": "#414844",
-                        "surface-tint": "#2c694e",
-                        "on-secondary-fixed-variant": "#3c4c12",
-                        "secondary-fixed-dim": "#bacf86",
-                        "surface-container": "#f5ece7",
-                        "primary-container": "#00452e",
-                        "on-error-container": "#93000a",
-                        "tertiary": "#3b1f00",
-                        "on-secondary-container": "#57692c",
-                        "tertiary-fixed-dim": "#f0bd8b",
-                        "surface-container-lowest": "#ffffff",
-                        "on-tertiary-container": "#cd9d6d",
-                        "on-background": "#1f1b18",
-                        "inverse-primary": "#95d4b3",
-                        "outline-variant": "#c1c8c2",
-                        "on-secondary": "#ffffff",
-                        "tertiary-container": "#56340e",
-                        "secondary-fixed": "#d6eba0",
-                        "surface-container-low": "#fbf2ed",
-                        "surface": "#fff8f5",
-                        "surface-dim": "#e1d8d3",
-                        "on-primary-fixed": "#002114",
-                        "error-container": "#ffdad6",
-                        "outline": "#717973",
-                        "surface-container-high": "#efe6e1",
-                        "primary-fixed-dim": "#95d4b3",
-                        "surface-variant": "#eae1dc",
-                        "on-tertiary-fixed-variant": "#623f18",
-                        "tertiary-fixed": "#ffdcbd",
-                        "on-surface": "#1f1b18",
-                        "secondary-container": "#d3e89d",
-                        "on-primary-container": "#76b394",
-                        "error": "#ba1a1a",
-                        "on-tertiary": "#ffffff",
-                        "on-tertiary-fixed": "#2c1600",
-                        "surface-bright": "#fff8f5",
-                        "surface-container-highest": "#eae1dc"
-                    },
-                    fontFamily: {
-                        "headline": ["Manrope"],
-                        "body": ["Inter"],
-                        "label": ["Inter"]
-                    },
-                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1.5rem", "full": "9999px" },
-                },
-            },
-        }
-    </script>
-<style>
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-        }
-        body { font-family: 'Inter', sans-serif; }
-        h1, h2, h3, .font-headline { font-family: 'Manrope', sans-serif; }
-    </style>
+<html class="light" lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>FarmAI | Monitoramento</title>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../css/style.css"/>
 </head>
-<body class="bg-background text-on-background min-h-screen">
-<!-- Top Navigation Shell -->
-<nav class="fixed top-0 w-full z-50 bg-emerald-50/80 dark:bg-stone-950/80 backdrop-blur-xl shadow-sm dark:shadow-none h-16 px-6 flex justify-between items-center w-full">
-<div class="flex items-center gap-4">
-<span class="text-xl font-bold tracking-tight text-emerald-950 dark:text-emerald-50">FarmAI</span>
-</div>
-<div class="flex items-center gap-4">
-<button class="p-2 text-stone-600 dark:text-stone-400 hover:bg-emerald-100/50 dark:hover:bg-stone-800 transition-colors active:scale-95 duration-200 rounded-full">
-<span class="material-symbols-outlined">notifications</span>
-</button>
-<button class="p-2 text-stone-600 dark:text-stone-400 hover:bg-emerald-100/50 dark:hover:bg-stone-800 transition-colors active:scale-95 duration-200 rounded-full">
-<span class="material-symbols-outlined">settings</span>
-</button>
-<div class="w-8 h-8 rounded-full overflow-hidden bg-surface-container ml-2">
-<img class="w-full h-full object-cover" data-alt="professional portrait of a modern agronomist wearing a neutral linen shirt against a soft natural background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDPGVXO3ZOzGYDdTW8dsNISm5MoZaOhXGr0qqW25CaHOhBvUCypy5nAzgbQmxsq8ZmmVvx40iLPPJAnnXnB3HVOTUB8qssS7YHXH8MiLQdWQdXE4DP4qTpJa-OKaX3Ygyg6g99FWUW-EekqHy5a2P0pbY0boAODToPQbrlrKJyvdOxEAUy2o4acld9j6iIM4Oen5xx41meyAgZJ26d8AVIKs3HG3NyUoz0PhUfWbqwMtvnA-JI-YZtX2Ud7EqHv3MewnMjA4iVn_nG_"/>
-</div>
-</div>
-</nav>
-<!-- Side Navigation Shell -->
-<aside class="hidden lg:flex flex-col fixed left-0 top-0 h-full w-64 py-8 px-4 bg-stone-50 dark:bg-stone-950 z-40 mt-16">
-<div class="space-y-1 mt-4">
-<a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all ease-in-out duration-300 text-stone-500 dark:text-stone-400 hover:text-emerald-700 dark:hover:text-emerald-300 hover:bg-stone-100 dark:hover:bg-stone-900" href="index.html">
-<span class="material-symbols-outlined">dashboard</span>
-<span class="font-inter text-sm font-semibold">Dashboard</span>
-</a>
-<a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all ease-in-out duration-300 text-emerald-900 dark:text-emerald-400 border-r-4 border-emerald-600 bg-emerald-50/50 dark:bg-emerald-900/10" href="monitoring.html">
-<span class="material-symbols-outlined">monitoring</span>
-<span class="font-inter text-sm font-semibold">Monitoring</span>
-</a>
-<a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all ease-in-out duration-300 text-stone-500 dark:text-stone-400 hover:text-emerald-700 dark:hover:text-emerald-300 hover:bg-stone-100 dark:hover:bg-stone-900" href="ia.html">
-<span class="material-symbols-outlined">psychology</span>
-<span class="font-inter text-sm font-semibold">AI Insights</span>
-</a>
-<a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all ease-in-out duration-300 text-stone-500 dark:text-stone-400 hover:text-emerald-700 dark:hover:text-emerald-300 hover:bg-stone-100 dark:hover:bg-stone-900" href="alerts.html">
-<span class="material-symbols-outlined">notifications_active</span>
-<span class="font-inter text-sm font-semibold">Alerts</span>
-</a>
-<a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all ease-in-out duration-300 text-stone-500 dark:text-stone-400 hover:text-emerald-700 dark:hover:text-emerald-300 hover:bg-stone-100 dark:hover:bg-stone-900" href="device.html">
-<span class="material-symbols-outlined">router</span>
-<span class="font-inter text-sm font-semibold">Devices</span>
-</a>
-</div>
-<div class="mt-auto space-y-1">
-<a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all ease-in-out duration-300 text-stone-500 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-900" href="#">
-<span class="material-symbols-outlined">help</span>
-<span class="font-inter text-sm font-semibold">Support</span>
-</a>
-<a class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all ease-in-out duration-300 text-stone-500 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-900" href="#">
-<span class="material-symbols-outlined">person</span>
-<span class="font-inter text-sm font-semibold">Account</span>
-</a>
-</div>
-</aside>
-<!-- Main Content Canvas -->
-<main class="lg:ml-64 pt-24 px-6 pb-12 transition-all">
-<!-- Header Section with Hero KPIs -->
-<header class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
-<div>
-<nav class="flex items-center gap-2 text-on-surface-variant text-xs mb-2">
-<span>Projetos</span>
-<span class="material-symbols-outlined text-[14px]">chevron_right</span>
-<span class="font-bold text-primary">Monitoring</span>
-</nav>
-<h1 class="text-4xl md:text-5xl font-extrabold tracking-tight text-primary leading-tight">Monitoramento Detalhado</h1>
-<p class="text-on-surface-variant mt-2 max-w-xl">Acompanhe a evolução biológica do seu solo em tempo real com precisão analítica e insights baseados em IA.</p>
-</div>
-<!-- Filter Bar -->
-<div class="flex flex-wrap gap-3 bg-surface-container-low p-2 rounded-2xl">
-<button class="px-4 py-2 rounded-xl text-sm font-semibold bg-primary text-on-primary transition-all">Últimas 24h</button>
-<button class="px-4 py-2 rounded-xl text-sm font-semibold text-on-surface hover:bg-surface-container transition-all">7 Dias</button>
-<button class="px-4 py-2 rounded-xl text-sm font-semibold text-on-surface hover:bg-surface-container transition-all">Personalizado</button>
-<div class="h-8 w-[1px] bg-outline-variant/30 self-center mx-1"></div>
-<button class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold border border-transparent bg-surface-container-highest text-on-surface hover:bg-surface-variant transition-all">
-<span class="material-symbols-outlined text-lg">compare_arrows</span>
-                    Comparar Sensores
-                </button>
-</div>
-</header>
-<!-- Bento Grid Layout for Data Visualization -->
-<div class="grid grid-cols-1 md:grid-cols-12 gap-6 mb-8">
-<!-- Main Hero Chart: Soil Moisture -->
-<section class="md:col-span-8 bg-surface-container-low rounded-2xl overflow-hidden shadow-sm relative group min-h-[400px]">
-<div class="p-6 pb-0 flex items-center justify-between">
-<div>
-<div class="flex items-center gap-2 mb-1">
-<span class="w-3 h-3 rounded-full bg-primary-container"></span>
-<h3 class="font-headline text-lg font-bold text-primary">Umidade do Solo (%)</h3>
-</div>
-<p class="text-xs text-on-surface-variant">Sensor: Alpha-01 vs Beta-04</p>
-</div>
-<div class="flex items-center gap-4">
-<div class="text-right">
-<p class="text-xs text-on-surface-variant font-medium uppercase tracking-wider">Média Atual</p>
-<p class="text-2xl font-black text-primary">42.8%</p>
-</div>
-<span class="material-symbols-outlined text-secondary text-3xl">water_drop</span>
-</div>
-</div>
-<!-- Visualizing Chart using CSS Gradients & SVG for illustrative fidelity -->
-<div class="h-64 mt-8 px-6 relative">
-<svg class="w-full h-full" preserveaspectratio="none" viewbox="0 0 100 100">
-<path d="M 0 80 Q 20 20 40 50 T 80 30 T 100 60 L 100 100 L 0 100 Z" fill="url(#grad1)" opacity="0.4"></path>
-<path d="M 0 80 Q 20 20 40 50 T 80 30 T 100 60" fill="none" stroke="var(--primary-container)" stroke-width="2"></path>
-<path d="M 0 70 Q 30 80 50 40 T 90 50 T 100 20" fill="none" stroke="var(--secondary)" stroke-dasharray="4 4" stroke-width="2"></path>
-<defs>
-<lineargradient id="grad1" x1="0%" x2="0%" y1="0%" y2="100%">
-<stop offset="0%" style="stop-color:var(--primary-fixed-dim);stop-opacity:1"></stop>
-<stop offset="100%" style="stop-color:var(--surface-container-low);stop-opacity:0"></stop>
-</lineargradient>
-</defs>
-</svg>
-<!-- Floating Data Points -->
-<div class="absolute top-1/4 left-1/3 bg-surface-container-lowest shadow-xl p-2 rounded-lg border border-outline-variant/10 text-[10px] font-bold">
-                        Sensor Alpha: 64%
-                    </div>
-</div>
-</section>
-<!-- Secondary Metrics: Heatmap Style Card -->
-<section class="md:col-span-4 grid grid-rows-2 gap-6">
-<!-- Temperature Card -->
-<div class="bg-surface-container rounded-2xl p-6 flex flex-col justify-between">
-<div class="flex justify-between items-start">
-<div>
-<h3 class="font-headline text-sm font-bold text-on-surface-variant uppercase tracking-widest">Temperatura</h3>
-<div class="flex items-baseline gap-1 mt-1">
-<span class="text-4xl font-black text-primary">24.5</span>
-<span class="text-xl font-bold text-primary">°C</span>
-</div>
-</div>
-<div class="p-3 bg-tertiary-fixed rounded-xl">
-<span class="material-symbols-outlined text-tertiary">thermostat</span>
-</div>
-</div>
-<div class="mt-4 flex gap-1 h-8 items-end">
-<div class="flex-1 bg-primary-container h-1/2 rounded-t-sm"></div>
-<div class="flex-1 bg-primary-container h-2/3 rounded-t-sm"></div>
-<div class="flex-1 bg-primary-container h-full rounded-t-sm"></div>
-<div class="flex-1 bg-primary-container h-3/4 rounded-t-sm"></div>
-<div class="flex-1 bg-primary-container h-1/2 rounded-t-sm"></div>
-<div class="flex-1 bg-primary-container h-4/5 rounded-t-sm"></div>
-<div class="flex-1 bg-primary-container h-3/4 rounded-t-sm"></div>
-</div>
-</div>
-<!-- pH Card -->
-<div class="bg-primary text-on-primary rounded-2xl p-6 relative overflow-hidden">
-<div class="relative z-10 h-full flex flex-col justify-between">
-<div>
-<h3 class="font-headline text-sm font-bold opacity-70 uppercase tracking-widest">Acidez do Solo (pH)</h3>
-<div class="flex items-baseline gap-1 mt-1">
-<span class="text-4xl font-black">6.2</span>
-</div>
-</div>
-<div class="bg-secondary-container/20 px-3 py-1 rounded-full w-fit self-end flex items-center gap-2">
-<span class="w-2 h-2 rounded-full bg-secondary-fixed"></span>
-<span class="text-xs font-bold uppercase">Saudável</span>
-</div>
-</div>
-<div class="absolute bottom-0 right-0 w-32 h-32 opacity-10 transform translate-x-8 translate-y-8">
-<span class="material-symbols-outlined text-[120px]">science</span>
-</div>
-</div>
-</section>
-</div>
-<!-- Comparison Table & Detailed Logs -->
-<div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
-<!-- Precise Reading Table -->
-<div class="xl:col-span-2">
-<div class="flex items-center justify-between mb-4">
-<h2 class="text-2xl font-bold text-primary tracking-tight">Leituras Precisas</h2>
-<button class="text-sm font-semibold text-primary-container flex items-center gap-1 hover:underline">
-                        Exportar CSV <span class="material-symbols-outlined text-sm">download</span>
-</button>
-</div>
-<div class="bg-surface-container-lowest rounded-2xl overflow-hidden">
-<table class="w-full text-left">
-<thead>
-<tr class="bg-surface-container-low text-on-surface-variant">
-<th class="px-6 py-4 text-xs font-bold uppercase tracking-wider">Horário</th>
-<th class="px-6 py-4 text-xs font-bold uppercase tracking-wider">Sensor ID</th>
-<th class="px-6 py-4 text-xs font-bold uppercase tracking-wider">Umidade</th>
-<th class="px-6 py-4 text-xs font-bold uppercase tracking-wider">Temp.</th>
-<th class="px-6 py-4 text-xs font-bold uppercase tracking-wider">Status</th>
-</tr>
-</thead>
-<tbody class="divide-y divide-surface-container">
-<tr class="hover:bg-surface-container-low transition-colors">
-<td class="px-6 py-4 text-sm font-medium">14:30:22</td>
-<td class="px-6 py-4 text-sm text-on-surface-variant font-mono">ALP-001</td>
-<td class="px-6 py-4 text-sm font-bold text-primary">42.2%</td>
-<td class="px-6 py-4 text-sm">24.5°C</td>
-<td class="px-6 py-4">
-<span class="px-2 py-1 rounded-lg bg-secondary-container text-on-secondary-container text-[10px] font-bold uppercase">Ativo</span>
-</td>
-</tr>
-<tr class="hover:bg-surface-container-low transition-colors">
-<td class="px-6 py-4 text-sm font-medium">14:15:10</td>
-<td class="px-6 py-4 text-sm text-on-surface-variant font-mono">BET-004</td>
-<td class="px-6 py-4 text-sm font-bold text-primary">39.8%</td>
-<td class="px-6 py-4 text-sm">23.9°C</td>
-<td class="px-6 py-4">
-<span class="px-2 py-1 rounded-lg bg-secondary-container text-on-secondary-container text-[10px] font-bold uppercase">Ativo</span>
-</td>
-</tr>
-<tr class="hover:bg-surface-container-low transition-colors">
-<td class="px-6 py-4 text-sm font-medium">14:00:05</td>
-<td class="px-6 py-4 text-sm text-on-surface-variant font-mono">ALP-001</td>
-<td class="px-6 py-4 text-sm font-bold text-primary">43.1%</td>
-<td class="px-6 py-4 text-sm">24.1°C</td>
-<td class="px-6 py-4">
-<span class="px-2 py-1 rounded-lg bg-error-container text-on-error-container text-[10px] font-bold uppercase">Alerta</span>
-</td>
-</tr>
-<tr class="hover:bg-surface-container-low transition-colors">
-<td class="px-6 py-4 text-sm font-medium">13:45:55</td>
-<td class="px-6 py-4 text-sm text-on-surface-variant font-mono">BET-004</td>
-<td class="px-6 py-4 text-sm font-bold text-primary">40.5%</td>
-<td class="px-6 py-4 text-sm">23.8°C</td>
-<td class="px-6 py-4">
-<span class="px-2 py-1 rounded-lg bg-secondary-container text-on-secondary-container text-[10px] font-bold uppercase">Ativo</span>
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-<!-- AI Insights Sidebar Card -->
-<div class="space-y-6">
-<h2 class="text-2xl font-bold text-primary tracking-tight">Insights do Analista</h2>
-<div class="bg-primary-container text-on-primary-container p-6 rounded-2xl relative overflow-hidden group">
-<div class="relative z-10">
-<span class="material-symbols-outlined text-4xl mb-4 text-primary-fixed-dim">psychology</span>
-<h4 class="font-headline text-lg font-bold mb-2">Previsão de Irrigação</h4>
-<p class="text-sm leading-relaxed opacity-90">Detectamos uma tendência de queda na umidade do setor Alpha. Recomendamos acionar o sistema de gotejamento às 18:00 para otimizar a absorção radicular.</p>
-<button class="mt-6 w-full py-3 bg-primary-fixed text-primary font-bold rounded-xl transition-transform active:scale-95">Executar Plano Automático</button>
-</div>
-<!-- Decorative background element -->
-<div class="absolute -top-12 -right-12 w-48 h-48 bg-white/5 rounded-full blur-3xl"></div>
-</div>
-<!-- Comparison Feature Mini-tool -->
-<div class="bg-surface-container p-6 rounded-2xl border border-outline-variant/10">
-<h4 class="font-headline text-sm font-bold text-on-surface mb-4 flex items-center gap-2">
-<span class="material-symbols-outlined text-lg">compare</span>
-                        Seletor de Comparação
-                    </h4>
-<div class="space-y-3">
-<div class="flex items-center justify-between p-3 bg-surface-container-lowest rounded-xl">
-<span class="text-sm font-medium">Sensor Alpha-01</span>
-<span class="material-symbols-outlined text-primary">check_circle</span>
-</div>
-<div class="flex items-center justify-between p-3 bg-surface-container-lowest rounded-xl">
-<span class="text-sm font-medium">Sensor Beta-04</span>
-<span class="material-symbols-outlined text-primary">check_circle</span>
-</div>
-<button class="w-full flex items-center justify-center gap-2 py-2 border-2 border-dashed border-outline-variant/50 rounded-xl text-on-surface-variant text-xs font-bold hover:bg-white transition-colors">
-<span class="material-symbols-outlined text-sm">add</span> Adicionar Sensor
-                        </button>
-</div>
-</div>
-</div>
-</div>
-</main>
-<!-- Contextual FAB (Only for main monitoring actions) -->
-<button class="fixed bottom-8 right-8 w-16 h-16 bg-primary-container text-primary-fixed shadow-2xl rounded-2xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all z-50">
-<span class="material-symbols-outlined text-3xl">add_chart</span>
-</button>
-</body></html>
+<body>
+
+  <!-- SideNavBar -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">
+        <span class="material-symbols-outlined">psychology</span>
+      </div>
+      <div>
+        <h1 class="brand-name">FarmAI</h1>
+        <p class="brand-sub">Agricultural Intel</p>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a class="nav-link" href="index.html">
+        <span class="material-symbols-outlined">dashboard</span>
+        Dashboard
+      </a>
+      <a class="nav-link active" href="monitoring.html">
+        <span class="material-symbols-outlined filled">monitoring</span>
+        Monitoring
+      </a>
+      <a class="nav-link" href="ia.html">
+        <span class="material-symbols-outlined">psychology</span>
+        AI Insights
+      </a>
+      <a class="nav-link" href="alerts.html">
+        <span class="material-symbols-outlined">notifications_active</span>
+        Alerts
+      </a>
+      <a class="nav-link" href="device.html">
+        <span class="material-symbols-outlined">router</span>
+        Devices
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="btn-add-sensor">
+        <span class="material-symbols-outlined">add</span>
+        Add New Sensor
+      </button>
+      <a class="nav-link-small" href="#">
+        <span class="material-symbols-outlined">help</span>
+        Support
+      </a>
+      <a class="nav-link-small" href="#">
+        <span class="material-symbols-outlined">person</span>
+        Account
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main Content Wrapper -->
+  <main class="main-content">
+
+    <!-- TopNavBar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="icon-btn topbar-menu-mobile">
+          <span class="material-symbols-outlined">menu</span>
+        </button>
+        <span class="topbar-brand-mobile">FarmAI</span>
+        <div class="search-bar">
+          <span class="material-symbols-outlined">search</span>
+          <input type="text" placeholder="Search sensors, readings..."/>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <button class="icon-btn">
+          <span class="material-symbols-outlined">notifications</span>
+        </button>
+        <button class="icon-btn">
+          <span class="material-symbols-outlined">settings</span>
+        </button>
+        <div class="avatar">
+          <img alt="User profile avatar"
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuDPGVXO3ZOzGYDdTW8dsNISm5MoZaOhXGr0qqW25CaHOhBvUCypy5nAzgbQmxsq8ZmmVvx40iLPPJAnnXnB3HVOTUB8qssS7YHXH8MiLQdWQdXE4DP4qTpJa-OKaX3Ygyg6g99FWUW-EekqHy5a2P0pbY0boAODToPQbrlrKJyvdOxEAUy2o4acld9j6iIM4Oen5xx41meyAgZJ26d8AVIKs3HG3NyUoz0PhUfWbqwMtvnA-JI-YZtX2Ud7EqHv3MewnMjA4iVn_nG_"/>
+        </div>
+      </div>
+    </header>
+
+    <!-- Content Canvas -->
+    <div class="content-canvas">
+
+      <!-- Page Header -->
+      <header class="mon-hero">
+        <div>
+          <nav class="breadcrumb">
+            <span>Projetos</span>
+            <span class="material-symbols-outlined breadcrumb-sep">chevron_right</span>
+            <span class="breadcrumb-current">Monitoring</span>
+          </nav>
+          <h1 class="mon-hero-title">Monitoramento Detalhado</h1>
+          <p class="mon-hero-desc">Acompanhe a evolução biológica do seu solo em tempo real com precisão analítica e insights baseados em IA.</p>
+        </div>
+
+        <!-- Filter / Time Range Bar -->
+        <div class="filter-bar">
+          <button class="filter-btn filter-btn--active" data-filter="24h">Últimas 24h</button>
+          <button class="filter-btn" data-filter="7d">7 Dias</button>
+          <button class="filter-btn" data-filter="custom">Personalizado</button>
+          <div class="filter-divider"></div>
+          <button class="filter-btn filter-btn--icon" id="compareSensorsBtn">
+            <span class="material-symbols-outlined">compare_arrows</span>
+            Comparar Sensores
+          </button>
+        </div>
+      </header>
+
+      <!-- Main Bento Grid -->
+      <div class="mon-grid">
+
+        <!-- Main Hero Chart: Soil Moisture -->
+        <section class="mon-chart-card">
+          <div class="mon-chart-header">
+            <div>
+              <div class="mon-chart-label">
+                <span class="mon-chart-dot"></span>
+                <h3 class="mon-chart-title">Umidade do Solo (%)</h3>
+              </div>
+              <p class="mon-chart-sub">Sensor: Alpha-01 vs Beta-04</p>
+            </div>
+            <div class="mon-chart-kpi">
+              <div class="mon-chart-kpi-text">
+                <p class="mon-chart-kpi-label">Média Atual</p>
+                <p class="mon-chart-kpi-value">42.8%</p>
+              </div>
+              <span class="material-symbols-outlined mon-chart-icon">water_drop</span>
+            </div>
+          </div>
+
+          <!-- SVG Chart -->
+          <div class="mon-chart-body">
+            <svg class="mon-svg" viewBox="0 0 300 150" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="monGrad1" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="var(--primary)" stop-opacity="0.4"/>
+                    <stop offset="100%" stop-color="var(--primary)" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <!-- Area fill Alpha -->
+              <path d="M0,100 C50,80 100,120 150,90 C200,60 250,110 300,70 L300,150 L0,150 Z"
+                    fill="url(#monGrad1)" opacity="0.3"/>
+              <!-- Line Alpha -->
+              <path d="M0,100 C50,80 100,120 150,90 C200,60 250,110 300,70"
+                    fill="none" stroke="var(--primary-container)" stroke-width="3"/>
+              <!-- Line Beta (dashed) -->
+              <path d="M0,110 C60,130 120,70 180,100 C240,130 280,80 300,60"
+                    fill="none" stroke="var(--secondary)" stroke-dasharray="6 4" stroke-width="2"/>
+            </svg>
+            <!-- Floating tooltip -->
+            <div class="mon-chart-tooltip">
+              Sensor Alpha: 64%
+            </div>
+          </div>
+        </section>
+
+        <!-- Secondary Metrics column -->
+        <div class="mon-metrics-col">
+
+          <!-- Temperature Card -->
+          <div class="mon-metric-card">
+            <div class="mon-metric-top">
+              <div>
+                <h3 class="mon-metric-label">Temperatura</h3>
+                <div class="mon-metric-value-row">
+                  <span class="mon-metric-value">24.5</span>
+                  <span class="mon-metric-unit">°C</span>
+                </div>
+              </div>
+              <div class="icon-box icon-tertiary">
+                <span class="material-symbols-outlined">thermostat</span>
+              </div>
+            </div>
+            <!-- Mini bar chart -->
+            <div class="mon-mini-bars">
+              <div class="mon-mini-bar" style="height: 50%"></div>
+              <div class="mon-mini-bar" style="height: 67%"></div>
+              <div class="mon-mini-bar" style="height: 100%"></div>
+              <div class="mon-mini-bar" style="height: 75%"></div>
+              <div class="mon-mini-bar" style="height: 50%"></div>
+              <div class="mon-mini-bar" style="height: 80%"></div>
+              <div class="mon-mini-bar" style="height: 75%"></div>
+            </div>
+          </div>
+
+          <!-- pH Card (dark) -->
+          <div class="mon-metric-card mon-metric-card--dark">
+            <div class="mon-metric-inner">
+              <div>
+                <h3 class="mon-metric-label mon-metric-label--light">Acidez do Solo (pH)</h3>
+                <div class="mon-metric-value-row">
+                  <span class="mon-metric-value">6.2</span>
+                </div>
+              </div>
+              <span class="mon-metric-badge-healthy">
+                <span class="mon-metric-badge-dot"></span>
+                Saudável
+              </span>
+            </div>
+            <span class="material-symbols-outlined mon-metric-bg-icon">science</span>
+          </div>
+
+        </div>
+      </div><!-- /mon-grid -->
+
+      <!-- Bottom Section: Table + Sidebar -->
+      <div class="mon-bottom-grid">
+
+        <!-- Precise Readings Table -->
+        <div class="mon-table-section">
+          <div class="mon-table-header">
+            <h2 class="mon-section-title">Leituras Precisas</h2>
+            <button class="mon-export-btn">
+              Exportar CSV
+              <span class="material-symbols-outlined">download</span>
+            </button>
+          </div>
+          <div class="mon-table-wrap">
+            <table class="mon-table">
+              <thead>
+                <tr>
+                  <th>Horário</th>
+                  <th>Sensor ID</th>
+                  <th>Umidade</th>
+                  <th>Temp.</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="mon-td-time">14:30:22</td>
+                  <td class="mon-td-id">ALP-001</td>
+                  <td class="mon-td-value">42.2%</td>
+                  <td>24.5°C</td>
+                  <td><span class="table-badge table-badge--active">Ativo</span></td>
+                </tr>
+                <tr>
+                  <td class="mon-td-time">14:15:10</td>
+                  <td class="mon-td-id">BET-004</td>
+                  <td class="mon-td-value">39.8%</td>
+                  <td>23.9°C</td>
+                  <td><span class="table-badge table-badge--active">Ativo</span></td>
+                </tr>
+                <tr>
+                  <td class="mon-td-time">14:00:05</td>
+                  <td class="mon-td-id">ALP-001</td>
+                  <td class="mon-td-value">43.1%</td>
+                  <td>24.1°C</td>
+                  <td><span class="table-badge table-badge--alert">Alerta</span></td>
+                </tr>
+                <tr>
+                  <td class="mon-td-time">13:45:55</td>
+                  <td class="mon-td-id">BET-004</td>
+                  <td class="mon-td-value">40.5%</td>
+                  <td>23.8°C</td>
+                  <td><span class="table-badge table-badge--active">Ativo</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Right Sidebar: AI + Comparison -->
+        <div class="mon-sidebar-col">
+          <h2 class="mon-section-title">Insights do Analista</h2>
+
+          <!-- AI Irrigation Insight -->
+          <div class="mon-analyst-card">
+            <div class="mon-analyst-inner">
+              <span class="material-symbols-outlined mon-analyst-icon">psychology</span>
+              <h4 class="mon-analyst-title">Previsão de Irrigação</h4>
+              <p class="mon-analyst-desc">
+                Detectamos uma tendência de queda na umidade do setor Alpha. Recomendamos acionar o sistema de gotejamento às 18:00 para otimizar a absorção radicular.
+              </p>
+              <button class="btn-mon-analyst" id="executeIrrigationPlan">
+                Executar Plano Automático
+              </button>
+            </div>
+            <div class="mon-analyst-glow"></div>
+          </div>
+
+          <!-- Sensor Comparison Selector -->
+          <div class="mon-compare-card">
+            <h4 class="mon-compare-title">
+              <span class="material-symbols-outlined">compare</span>
+              Seletor de Comparação
+            </h4>
+            <div class="mon-compare-list">
+              <div class="mon-compare-item">
+                <span>Sensor Alpha-01</span>
+                <span class="material-symbols-outlined mon-compare-check">check_circle</span>
+              </div>
+              <div class="mon-compare-item">
+                <span>Sensor Beta-04</span>
+                <span class="material-symbols-outlined mon-compare-check">check_circle</span>
+              </div>
+              <button class="mon-compare-add">
+                <span class="material-symbols-outlined">add</span>
+                Adicionar Sensor
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div><!-- /mon-bottom-grid -->
+
+    </div><!-- /content-canvas -->
+  </main>
+
+  <!-- FAB: Add Chart -->
+  <button class="fab fab--chart" id="fabChart">
+    <span class="material-symbols-outlined">add_chart</span>
+  </button>
+
+  <script src="../js/script.js"></script>
+</body>
+</html>

@@ -47,35 +47,28 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  /* ── Search bar filter ───────────────────────────────────── */
+  /* ── Search bar filter (unified, all pages) ─────────────── */
   const searchInput = document.querySelector('.search-bar input');
   if (searchInput) {
     searchInput.addEventListener('input', (e) => {
       const query = e.target.value.toLowerCase().trim();
 
-      // Filter bento-grid cards (AI Insights page)
-      const cards = document.querySelectorAll('.bento-grid .card');
-      cards.forEach(card => {
-        card.style.transition = 'opacity 0.25s';
-        if (!query) {
-          card.style.opacity = '1';
-          return;
-        }
-        const text = card.textContent.toLowerCase();
-        card.style.opacity = text.includes(query) ? '1' : '0.35';
-      });
+      const applyFilter = (selector) => {
+        document.querySelectorAll(selector).forEach(el => {
+          el.style.transition = 'opacity 0.25s';
+          el.style.opacity = (!query || el.textContent.toLowerCase().includes(query)) ? '1' : '0.35';
+        });
+      };
 
-      // Filter stat cards (Dashboard page)
-      const statCards = document.querySelectorAll('.stat-card-box, .trends-card, .field-map-card');
-      statCards.forEach(card => {
-        card.style.transition = 'opacity 0.25s';
-        if (!query) {
-          card.style.opacity = '1';
-          return;
-        }
-        const text = card.textContent.toLowerCase();
-        card.style.opacity = text.includes(query) ? '1' : '0.35';
-      });
+      // AI Insights page — bento cards
+      applyFilter('.bento-grid .card');
+
+      // Dashboard page — stat/map/trend cards
+      applyFilter('.stat-card-box, .trends-card, .field-map-card');
+
+      // Monitoring page — table rows and metric cards
+      applyFilter('.mon-table tbody tr');
+      applyFilter('.mon-chart-card, .mon-metric-card');
     });
   }
 
@@ -160,6 +153,78 @@ document.addEventListener('DOMContentLoaded', () => {
     trendsSelect.addEventListener('change', (e) => {
       console.log(`[FarmAI] Trends period: "${e.target.value}"`);
       // Future: fetch data and redraw chart
+    });
+  }
+
+  /* ──────────────────────────────────────────────────────────
+     MONITORING PAGE  (monitoring.html) specific behaviors
+     ────────────────────────────────────────────────────────── */
+
+  /* Time range filter buttons */
+  const filterBtns = document.querySelectorAll('.filter-btn[data-filter]');
+  filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      filterBtns.forEach(b => b.classList.remove('filter-btn--active'));
+      btn.classList.add('filter-btn--active');
+      console.log(`[FarmAI] Time filter: "${btn.dataset.filter}"`);
+      // Future: reload chart data for selected range
+    });
+  });
+
+  /* Compare sensors button */
+  const compareSensorsBtn = document.getElementById('compareSensorsBtn');
+  if (compareSensorsBtn) {
+    compareSensorsBtn.addEventListener('click', () => {
+      const compareCard = document.querySelector('.mon-compare-card');
+      if (compareCard) {
+        compareCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        compareCard.style.outline = '2px solid var(--primary)';
+        setTimeout(() => { compareCard.style.outline = ''; }, 1500);
+      }
+    });
+  }
+
+  /* Execute Irrigation Plan button */
+  const executeIrrigationPlan = document.getElementById('executeIrrigationPlan');
+  if (executeIrrigationPlan) {
+    executeIrrigationPlan.addEventListener('click', () => {
+      executeIrrigationPlan.textContent = '✓ Plano Iniciado às 18:00';
+      executeIrrigationPlan.style.background = 'var(--secondary-fixed)';
+      executeIrrigationPlan.style.color = 'var(--on-secondary-fixed)';
+      executeIrrigationPlan.disabled = true;
+    });
+  }
+
+  /* Add Sensor (comparison selector) */
+  const addSensorBtn = document.querySelector('.mon-compare-add');
+  if (addSensorBtn) {
+    addSensorBtn.addEventListener('click', () => {
+      console.log('[FarmAI] Open sensor picker modal');
+      // Future: open a sensor selection modal
+    });
+  }
+
+  /* Export CSV */
+  const exportBtn = document.querySelector('.mon-export-btn');
+  if (exportBtn) {
+    exportBtn.addEventListener('click', () => {
+      const original = exportBtn.innerHTML;
+      exportBtn.textContent = '✓ CSV Exportado';
+      exportBtn.disabled = true;
+      setTimeout(() => {
+        exportBtn.innerHTML = original;
+        exportBtn.disabled = false;
+      }, 2500);
+    });
+  }
+
+  /* FAB chart button (monitoring) */
+  const fabChart = document.getElementById('fabChart');
+  if (fabChart) {
+    fabChart.addEventListener('click', () => {
+      fabChart.style.transform = 'scale(0.88)';
+      setTimeout(() => { fabChart.style.transform = ''; }, 200);
+      console.log('[FarmAI] Add new chart');
     });
   }
 
