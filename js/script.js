@@ -69,6 +69,11 @@ document.addEventListener('DOMContentLoaded', () => {
       // Monitoring page — table rows and metric cards
       applyFilter('.mon-table tbody tr');
       applyFilter('.mon-chart-card, .mon-metric-card');
+
+      // Alerts page — alert cards, resolved items, sector items
+      applyFilter('.alr-card');
+      applyFilter('.alr-resolved-item');
+      applyFilter('.alr-sector-item');
     });
   }
 
@@ -227,5 +232,74 @@ document.addEventListener('DOMContentLoaded', () => {
       console.log('[FarmAI] Add new chart');
     });
   }
+
+  /* ──────────────────────────────────────────────────────────
+     ALERTS PAGE  (alerts.html) specific behaviors
+     ────────────────────────────────────────────────────────── */
+
+  /* Start Irrigation button (critical alert) */
+  const startIrrigationBtn = document.getElementById('startIrrigationBtn');
+  if (startIrrigationBtn) {
+    startIrrigationBtn.addEventListener('click', () => {
+      startIrrigationBtn.textContent = '✓ Irrigation Started';
+      startIrrigationBtn.style.background = '#2e7d5a';
+      startIrrigationBtn.disabled = true;
+      const card = document.getElementById('alertCritical');
+      if (card) { card.style.opacity = '0.6'; card.style.transition = 'opacity 0.5s'; }
+    });
+  }
+
+  /* Dispatch Technician button */
+  const dispatchTechBtn = document.getElementById('dispatchTechBtn');
+  if (dispatchTechBtn) {
+    dispatchTechBtn.addEventListener('click', () => {
+      const orig = dispatchTechBtn.textContent;
+      dispatchTechBtn.textContent = '✓ Technician Dispatched';
+      dispatchTechBtn.disabled = true;
+      setTimeout(() => { dispatchTechBtn.textContent = orig; dispatchTechBtn.disabled = false; }, 4000);
+    });
+  }
+
+  /* Export Logs button */
+  const exportLogsBtn = document.getElementById('exportLogsBtn');
+  if (exportLogsBtn) {
+    exportLogsBtn.addEventListener('click', () => {
+      const orig = exportLogsBtn.innerHTML;
+      exportLogsBtn.innerHTML = '<span class="material-symbols-outlined">check_circle</span> Logs Exported';
+      exportLogsBtn.disabled = true;
+      setTimeout(() => { exportLogsBtn.innerHTML = orig; exportLogsBtn.disabled = false; }, 3000);
+    });
+  }
+
+  /* Mute All toggle */
+  const muteAllBtn = document.getElementById('muteAllBtn');
+  if (muteAllBtn) {
+    let muted = false;
+    muteAllBtn.addEventListener('click', () => {
+      muted = !muted;
+      if (muted) {
+        muteAllBtn.innerHTML = '<span class="material-symbols-outlined">notifications_active</span> Unmute All';
+        muteAllBtn.style.background = 'var(--on-surface-variant)';
+      } else {
+        muteAllBtn.innerHTML = '<span class="material-symbols-outlined">notifications_off</span> Mute All';
+        muteAllBtn.style.background = '';
+      }
+      console.log(`[FarmAI] Alerts ${muted ? 'muted' : 'unmuted'}`);
+    });
+  }
+
+  /* Mobile bottom nav active state sync */
+  const bottomNavItems = document.querySelectorAll('.bottom-nav-item');
+  bottomNavItems.forEach(item => {
+    const href = item.getAttribute('href') || '';
+    if (href === currentFile) {
+      bottomNavItems.forEach(i => i.classList.remove('bottom-nav-item--active'));
+      item.classList.add('bottom-nav-item--active');
+    }
+    item.addEventListener('click', () => {
+      bottomNavItems.forEach(i => i.classList.remove('bottom-nav-item--active'));
+      item.classList.add('bottom-nav-item--active');
+    });
+  });
 
 });
