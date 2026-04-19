@@ -387,4 +387,225 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  /* ══════════════════════════════════════════════════════════
+     AI CHAT OVERLAY — logic for ia.html
+     ══════════════════════════════════════════════════════════ */
+
+  const chatOverlay    = document.getElementById('aiChatOverlay');
+  const chatPanel      = document.getElementById('aiChatPanel');
+  const chatBackBtn    = document.getElementById('aiChatBackBtn');
+  const chatInput      = document.getElementById('aiChatInput');
+  const chatSendBtn    = document.getElementById('aiChatSendBtn');
+  const chatMessages   = document.getElementById('aiChatMessages');
+  const chatTyping     = document.getElementById('aiChatTyping');
+  const triggerInput   = document.getElementById('aiChatTriggerInput');
+  const triggerBtn     = document.getElementById('aiChatTriggerBtn');
+
+  /* Only run chat logic if overlay elements exist on the page */
+  if (!chatOverlay || !triggerInput) return;
+
+  /* ── Conversation history for the API ───────────────────── */
+  const conversationHistory = [];
+
+  /* System prompt: farm-specific assistant context */
+  const SYSTEM_PROMPT = `Você é o Assistente IA da FarmAI, uma plataforma inteligente de monitoramento agrícola. 
+Você é especializado em:
+- Irrigação e gestão hídrica
+- Análise de solo (pH, nutrientes, umidade)
+- Previsão climática e seu impacto nas lavouras
+- Detecção e controle de pragas e doenças
+- Fertilização e manejo de nutrientes
+- Otimização de produção e sustentabilidade
+
+Responda sempre em português do Brasil. Seja preciso, prático e objetivo. Use dados e porcentagens quando relevante. Formate listas com marcadores simples quando listar várias opções. Não use markdown pesado. Mantenha respostas concisas (máximo 3-4 parágrafos) mas completas. Se não souber algo específico sobre a fazenda do usuário, peça os dados necessários.`;
+
+  /* ── Open / Close helpers ────────────────────────────────── */
+  function openChat(prefillText = '') {
+    chatOverlay.classList.add('ai-chat-overlay--active');
+    chatOverlay.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden'; // prevent bg scroll
+
+    // Move any text already typed in the trigger into the chat input
+    if (prefillText.trim()) {
+      chatInput.value = prefillText.trim();
+    }
+
+    // Focus the chat input after the animation settles
+    setTimeout(() => chatInput.focus(), 420);
+  }
+
+  function closeChat() {
+    chatOverlay.classList.remove('ai-chat-overlay--active');
+    chatOverlay.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+    // Clear trigger input
+    triggerInput.value = '';
+  }
+
+  /* ── Trigger: click on the input bar or its trigger button ─ */
+  triggerInput.addEventListener('focus', () => {
+    openChat(triggerInput.value);
+  });
+
+  triggerInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && triggerInput.value.trim()) {
+      openChat(triggerInput.value);
+    }
+  });
+
+  if (triggerBtn) {
+    triggerBtn.addEventListener('click', () => {
+      openChat(triggerInput.value);
+    });
+  }
+
+  /* ── Close: back button ──────────────────────────────────── */
+  chatBackBtn.addEventListener('click', closeChat);
+
+  /* ── Close: click on the dark backdrop (outside panel) ───── */
+  chatOverlay.addEventListener('click', (e) => {
+    if (e.target === chatOverlay) closeChat();
+  });
+
+  /* ── Close: Escape key ───────────────────────────────────── */
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && chatOverlay.classList.contains('ai-chat-overlay--active')) {
+      closeChat();
+    }
+  });
+
+  /* ── Append a message bubble ─────────────────────────────── */
+  function appendMessage(text, role) {
+    const msgEl = document.createElement('div');
+    msgEl.classList.add('ai-msg', role === 'user' ? 'ai-msg--user' : 'ai-msg--bot');
+
+    const avatarEl = document.createElement('div');
+    avatarEl.classList.add('ai-msg-avatar');
+    avatarEl.innerHTML = role === 'user'
+      ? '<span class="material-symbols-outlined filled">person</span>'
+      : '<span class="material-symbols-outlined filled">eco</span>';
+
+    if (role === 'user') {
+      avatarEl.style.background = 'var(--secondary-container)';
+      avatarEl.querySelector('.material-symbols-outlined').style.color = 'var(--on-secondary-container)';
+    }
+
+    const bubbleEl = document.createElement('div');
+    bubbleEl.classList.add('ai-msg-bubble');
+    // Preserve line breaks in API response
+    bubbleEl.innerHTML = text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/\n/g, '<br>');
+
+    if (role === 'user') {
+      msgEl.appendChild(bubbleEl);
+      msgEl.appendChild(avatarEl);
+    } else {
+      msgEl.appendChild(avatarEl);
+      msgEl.appendChild(bubbleEl);
+    }
+
+    chatMessages.appendChild(msgEl);
+    scrollToBottom();
+    return bubbleEl; // return for streaming updates
+  }
+
+  /* ── Smooth scroll to bottom of messages ────────────────── */
+  function scrollToBottom() {
+    chatMessages.scrollTo({ top: chatMessages.scrollHeight, behavior: 'smooth' });
+  }
+
+  /* ── Show / hide typing indicator ───────────────────────── */
+  function showTyping() {
+    if (chatTyping) {
+      chatTyping.style.display = 'flex';
+      scrollToBottom();
+    }
+  }
+  function hideTyping() {
+    if (chatTyping) chatTyping.style.display = 'none';
+  }
+
+  /* ── Call Anthropic API ──────────────────────────────────── */
+  async function callClaudeAPI(userMessage) {
+    conversationHistory.push({ role: 'user', content: userMessage });
+
+    showTyping();
+    chatSendBtn.disabled = true;
+    chatInput.disabled = true;
+
+    try {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          system: SYSTEM_PROMPT,
+          messages: conversationHistory,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      // Extract text from response content blocks
+      const assistantText = data.content
+        .filter(block => block.type === 'text')
+        .map(block => block.text)
+        .join('');
+
+      hideTyping();
+      appendMessage(assistantText, 'assistant');
+
+      // Store assistant reply in history
+      conversationHistory.push({ role: 'assistant', content: assistantText });
+
+    } catch (err) {
+      hideTyping();
+      console.error('[FarmAI Chat] API error:', err);
+      appendMessage(
+        'Desculpe, não consegui me conectar ao servidor no momento. Verifique sua conexão e tente novamente.',
+        'assistant'
+      );
+    } finally {
+      chatSendBtn.disabled = false;
+      chatInput.disabled = false;
+      chatInput.focus();
+    }
+  }
+
+  /* ── Send message handler ────────────────────────────────── */
+  async function handleSend() {
+    const text = chatInput.value.trim();
+    if (!text) return;
+
+    chatInput.value = '';
+    appendMessage(text, 'user');
+    await callClaudeAPI(text);
+  }
+
+  /* ── Send on button click ────────────────────────────────── */
+  chatSendBtn.addEventListener('click', handleSend);
+
+  /* ── Send on Enter (Shift+Enter = new line) ──────────────── */
+  chatInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  });
+
+  /* ── If there's prefill text and user presses Enter on overlay open ─ */
+  chatInput.addEventListener('keydown', (e) => {
+    // Already handled above; this redundancy is intentional for clarity.
+  });
+
 });
