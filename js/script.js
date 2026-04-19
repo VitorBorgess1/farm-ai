@@ -93,7 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (card) {
         const badge = card.querySelector('.badge-error');
         if (badge) {
-          badge.textContent = 'Resolved';
+          badge.textContent = 'Resolvido';
           badge.classList.remove('badge-error');
           badge.classList.add('badge-secondary');
         }
