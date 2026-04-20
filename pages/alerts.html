@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html class="light" lang="en">
+<html class="light" lang="pt-br">
 <head>
   <meta charset="utf-8"/>
   <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-  <title>FarmAI | Alerts</title>
+  <title>FarmAI | Alertas</title>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="../css/style.css"/>
@@ -98,19 +98,19 @@
         <div class="alr-hero-text">
           <div class="status-badge status-badge--live">
             <span class="status-dot status-dot--live"></span>
-            LIVE STATUS: MONITORING ACTIVE
+            STATUS AO VIVO: MONITORAMENTO ATIVO
           </div>
-          <h2 class="alr-hero-title">Intelligence Center</h2>
-          <p class="alr-hero-desc">Real-time alerts and historical event logs for your precision agriculture network. Our AI identifies anomalies before they become crop failures.</p>
+          <h2 class="alr-hero-title">Central de Inteligência</h2>
+          <p class="alr-hero-desc">Alertas em tempo real e registros históricos de eventos para sua rede de agricultura de precisão. Nossa IA identifica anomalias antes que se tornem perdas na colheita.</p>
         </div>
         <div class="dash-hero-actions">
           <button class="btn-secondary btn-icon" id="exportLogsBtn">
             <span class="material-symbols-outlined">file_download</span>
-            Export Logs
+            Exportar Registros
           </button>
           <button class="btn-primary btn-icon" id="muteAllBtn">
             <span class="material-symbols-outlined">notifications_off</span>
-            Mute All
+            Silenciar Todos
           </button>
         </div>
       </header>
@@ -121,13 +121,13 @@
         <!-- LEFT COLUMN: Alert Feed -->
         <div class="alr-feed">
 
-          <!-- Section: Active Urgencies -->
+          <!-- Section: Urgências Ativas -->
           <div class="alr-feed-header">
-            <h3 class="alr-feed-title">Active Urgencies</h3>
-            <span class="alr-priority-count">3 Priority Actions</span>
+            <h3 class="alr-feed-title">Urgências Ativas</h3>
+            <span class="alr-priority-count">3 Ações Prioritárias</span>
           </div>
 
-          <!-- CRITICAL Alert Card -->
+          <!-- CRÍTICO Alert Card -->
           <article class="alr-card alr-card--critical" id="alertCritical">
             <div class="alr-card-glow alr-card-glow--error"></div>
             <div class="alr-card-body">
@@ -136,14 +136,14 @@
               </div>
               <div class="alr-card-content">
                 <div class="alr-card-meta">
-                  <span class="alr-urgency-label alr-urgency-label--critical">Urgency: Critical</span>
-                  <span class="alr-timestamp">2 mins ago</span>
+                  <span class="alr-urgency-label alr-urgency-label--critical">Urgência: Crítica</span>
+                  <span class="alr-timestamp">há 2 minutos</span>
                 </div>
-                <h4 class="alr-card-title">Critical Low Humidity — Sector 3</h4>
-                <p class="alr-card-desc">Soil moisture levels dropped below 12% in the North-East Vineyard section. Automated irrigation failed to trigger.</p>
+                <h4 class="alr-card-title">Umidade Criticamente Baixa — Setor 3</h4>
+                <p class="alr-card-desc">Os níveis de umidade do solo caíram abaixo de 12% na seção Nordeste do Vinhedo. A irrigação automática não foi acionada.</p>
                 <div class="alr-card-actions">
-                  <button class="btn-alert-primary" id="startIrrigationBtn">Start Irrigation</button>
-                  <button class="btn-alert-secondary" id="dispatchTechBtn">Dispatch Technician</button>
+                  <button class="btn-alert-primary" id="startIrrigationBtn">Iniciar Irrigação</button>
+                  <button class="btn-alert-secondary" id="dispatchTechBtn">Enviar Técnico</button>
                 </div>
               </div>
             </div>
@@ -157,37 +157,37 @@
               </div>
               <div class="alr-card-content">
                 <div class="alr-card-meta">
-                  <span class="alr-urgency-label alr-urgency-label--warning">Urgency: High</span>
-                  <span class="alr-timestamp">45 mins ago</span>
+                  <span class="alr-urgency-label alr-urgency-label--warning">Urgência: Alta</span>
+                  <span class="alr-timestamp">há 45 minutos</span>
                 </div>
-                <h4 class="alr-card-title">Abnormal Heat Signature — Greenhouse B</h4>
-                <p class="alr-card-desc">Ambient temperature is 4°C above predicted diurnal curve. Potential ventilation malfunction detected.</p>
+                <h4 class="alr-card-title">Assinatura de Calor Anormal — Estufa B</h4>
+                <p class="alr-card-desc">A temperatura ambiente está 4°C acima da curva diurna prevista. Possível falha de ventilação detectada.</p>
                 <div class="alr-card-crop-info">
                   <div class="alr-crop-avatar">
                     <img
-                      alt="Tomato crops in greenhouse"
+                      alt="Cultivo de tomates na estufa"
                       src="https://lh3.googleusercontent.com/aida-public/AB6AXuCaVVZzgKkCbxUnRGPLBZ58nLtjDP_j18peAMnjihfGw6W8nCvdNC_GxqYL4L0_eR_2eUopJctBlum3dB3OuiQ59J2OcnY8f7kaUNAub14LBLUoGbImTy1yUndc8AOrYbdGXs9e_o-GGGqqRixqtHuUcL5Iuz95U-vhKmeFxwMqzOVl5BkhqkpNsXdSg-V6497tq3WKVJt4To9ixSTlXsK7vtmHpC79f_g9iV_e8QIgJw3ZAE3IbWaqLjSpEC4rlK1kj40ErtKrrmt2"/>
                   </div>
-                  <span class="alr-crop-label">Impact: Tomato crops (High Risk)</span>
+                  <span class="alr-crop-label">Impacto: Cultivo de tomates (Alto Risco)</span>
                 </div>
               </div>
             </div>
           </article>
 
-          <!-- Section: Resolved Recently -->
+          <!-- Section: Resolvidos Recentemente -->
           <div class="alr-resolved-section">
-            <h3 class="alr-feed-title">Resolved Recently</h3>
+            <h3 class="alr-feed-title">Resolvidos Recentemente</h3>
 
             <div class="alr-resolved-item">
               <div class="icon-box icon-secondary alr-resolved-icon">
                 <span class="material-symbols-outlined">check_circle</span>
               </div>
               <div class="alr-resolved-text">
-                <h5 class="alr-resolved-title">System Update Completed</h5>
-                <p class="alr-resolved-desc">Central Hub v4.2 deployment successful across all 12 zones.</p>
+                <h5 class="alr-resolved-title">Atualização do Sistema Concluída</h5>
+                <p class="alr-resolved-desc">Implantação do Hub Central v4.2 concluída com sucesso em todas as 12 zonas.</p>
               </div>
               <div class="alr-resolved-time">
-                <span class="alr-resolved-day">Today</span>
+                <span class="alr-resolved-day">Hoje</span>
                 <span class="alr-resolved-clock">09:12 AM</span>
               </div>
             </div>
@@ -197,11 +197,11 @@
                 <span class="material-symbols-outlined">check_circle</span>
               </div>
               <div class="alr-resolved-text">
-                <h5 class="alr-resolved-title">Pump Calibration — Zone 1</h5>
-                <p class="alr-resolved-desc">Flow rate discrepancy resolved. Manual override released.</p>
+                <h5 class="alr-resolved-title">Calibração da Bomba — Zona 1</h5>
+                <p class="alr-resolved-desc">Discrepância na taxa de fluxo resolvida. Controle manual liberado.</p>
               </div>
               <div class="alr-resolved-time">
-                <span class="alr-resolved-day">Yesterday</span>
+                <span class="alr-resolved-day">Ontem</span>
                 <span class="alr-resolved-clock">04:30 PM</span>
               </div>
             </div>
@@ -213,15 +213,15 @@
         <!-- RIGHT COLUMN: Stats & Context -->
         <div class="alr-sidebar">
 
-          <!-- Weekly Summary (dark card) -->
+          <!-- Resumo Semanal (dark card) -->
           <div class="alr-stats-card">
             <div class="alr-stats-glow"></div>
-            <h3 class="alr-stats-title">Weekly Summary</h3>
+            <h3 class="alr-stats-title">Resumo Semanal</h3>
             <div class="alr-stats-body">
 
               <div class="alr-stat-row">
                 <div class="alr-stat-row-top">
-                  <span class="alr-stat-row-label">Uptime Efficiency</span>
+                  <span class="alr-stat-row-label">Eficiência de Disponibilidade</span>
                   <span class="alr-stat-row-value">99.8%</span>
                 </div>
                 <div class="alr-progress-bar">
@@ -231,7 +231,7 @@
 
               <div class="alr-stat-row">
                 <div class="alr-stat-row-top">
-                  <span class="alr-stat-row-label">Incidents Resolved</span>
+                  <span class="alr-stat-row-label">Incidentes Resolvidos</span>
                   <span class="alr-stat-row-value">24/27</span>
                 </div>
                 <div class="alr-progress-bar">
@@ -242,48 +242,48 @@
             </div>
           </div>
 
-          <!-- Sector Integrity Widget -->
+          <!-- Integridade dos Setores Widget -->
           <div class="alr-sector-card">
-            <h3 class="alr-sector-title">Sector Integrity</h3>
+            <h3 class="alr-sector-title">Integridade dos Setores</h3>
             <div class="alr-sector-list">
 
               <div class="alr-sector-item alr-sector-item--ok">
                 <div class="alr-sector-item-left">
                   <span class="alr-sector-dot alr-sector-dot--ok"></span>
-                  <span class="alr-sector-name">Sector 1 (Corn)</span>
+                  <span class="alr-sector-name">Setor 1 (Milho)</span>
                 </div>
-                <span class="alr-sector-status alr-sector-status--ok">OPTIMAL</span>
+                <span class="alr-sector-status alr-sector-status--ok">ÓTIMO</span>
               </div>
 
               <div class="alr-sector-item alr-sector-item--ok">
                 <div class="alr-sector-item-left">
                   <span class="alr-sector-dot alr-sector-dot--ok"></span>
-                  <span class="alr-sector-name">Sector 2 (Wheat)</span>
+                  <span class="alr-sector-name">Setor 2 (Trigo)</span>
                 </div>
-                <span class="alr-sector-status alr-sector-status--ok">OPTIMAL</span>
+                <span class="alr-sector-status alr-sector-status--ok">ÓTIMO</span>
               </div>
 
               <div class="alr-sector-item alr-sector-item--critical">
                 <div class="alr-sector-item-left">
                   <span class="alr-sector-dot alr-sector-dot--critical"></span>
-                  <span class="alr-sector-name">Sector 3 (Vineyard)</span>
+                  <span class="alr-sector-name">Setor 3 (Vinhedo)</span>
                 </div>
-                <span class="alr-sector-status alr-sector-status--critical">CRITICAL</span>
+                <span class="alr-sector-status alr-sector-status--critical">CRÍTICO</span>
               </div>
 
             </div>
           </div>
 
-          <!-- Satellite Intel Image Card -->
+          <!-- Intel por Satélite Image Card -->
           <div class="alr-satellite-card">
             <div class="alr-satellite-img">
               <img
-                alt="Aerial view of crop fields"
+                alt="Vista aérea de campos de cultivo"
                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuCj-lIwMmzlZ5WKlMBFxp2Jh2wc2i8W2yQbcnkIScYMZrpXFQNZFstSIksf3UqMOhU59rYJqvHXTHXsRBO_y3rQOkzYN8cTXyX-iinGhzaw3Nvr-i-g6QDViQl25T6H4x_vHi7vdMtyJKNGI7r_OQHBvOZgkl0ipgO9nstYUvBGPPLODQ9xMkSSqAeisy_tIWOFFhbvEzkV8bIbc-mwzSkevox9J2Mv5e54thPTUhR2jYicCfHahZw0hsO8NdoTw_9kEZycPcmCFpZd"/>
             </div>
             <div class="alr-satellite-overlay">
-              <span class="alr-satellite-tag">Satellite Intel</span>
-              <p class="alr-satellite-text">Moisture variance detected in North Ridge.</p>
+              <span class="alr-satellite-tag">Intel por Satélite</span>
+              <p class="alr-satellite-text">Variação de umidade detectada na Crista Norte.</p>
             </div>
           </div>
 
@@ -298,7 +298,7 @@
   <nav class="bottom-nav">
     <a class="bottom-nav-item" href="index.html">
       <span class="material-symbols-outlined">dashboard</span>
-      <span>Dash</span>
+      <span>Painel</span>
     </a>
     <a class="bottom-nav-item" href="monitoring.html">
       <span class="material-symbols-outlined">monitoring</span>
@@ -306,7 +306,7 @@
     </a>
     <a class="bottom-nav-item bottom-nav-item--active" href="alerts.html">
       <span class="material-symbols-outlined filled">notifications_active</span>
-      <span>Alerts</span>
+      <span>Alertas</span>
     </a>
     <a class="bottom-nav-item" href="ia.html">
       <span class="material-symbols-outlined">psychology</span>
@@ -314,7 +314,7 @@
     </a>
     <a class="bottom-nav-item" href="device.html">
       <span class="material-symbols-outlined">router</span>
-      <span>Devices</span>
+      <span>Dispositivos</span>
     </a>
   </nav>
 

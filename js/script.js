@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (acknowledgeBtn) {
     acknowledgeBtn.addEventListener('click', () => {
       const card = acknowledgeBtn.closest('.card');
-      acknowledgeBtn.textContent = '✓ Acknowledged';
+      acknowledgeBtn.textContent = '✓ Confirmado';
       acknowledgeBtn.style.background = '#2e7d5a';
       acknowledgeBtn.disabled = true;
 
@@ -131,7 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (irrigationBtn) {
     irrigationBtn.addEventListener('click', () => {
       const original = irrigationBtn.innerHTML;
-      irrigationBtn.innerHTML = '<span class="material-symbols-outlined filled">check_circle</span> Irrigation Active';
+      irrigationBtn.innerHTML = '<span class="material-symbols-outlined filled">check_circle</span> Irrigação Ativada';
       irrigationBtn.style.background = '#2e7d5a';
       irrigationBtn.disabled = true;
       setTimeout(() => {
@@ -146,7 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const insightBtn = document.querySelector('.btn-insight');
   if (insightBtn) {
     insightBtn.addEventListener('click', () => {
-      insightBtn.textContent = '✓ Recommendation Applied';
+      insightBtn.textContent = '✓ Recomendação Aplicada';
       insightBtn.style.background = '#bacf86';
       insightBtn.disabled = true;
     });
@@ -241,7 +241,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const startIrrigationBtn = document.getElementById('startIrrigationBtn');
   if (startIrrigationBtn) {
     startIrrigationBtn.addEventListener('click', () => {
-      startIrrigationBtn.textContent = '✓ Irrigation Started';
+      startIrrigationBtn.textContent = '✓ Irrigação Iniciada';
       startIrrigationBtn.style.background = '#2e7d5a';
       startIrrigationBtn.disabled = true;
       const card = document.getElementById('alertCritical');
@@ -254,7 +254,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (dispatchTechBtn) {
     dispatchTechBtn.addEventListener('click', () => {
       const orig = dispatchTechBtn.textContent;
-      dispatchTechBtn.textContent = '✓ Technician Dispatched';
+      dispatchTechBtn.textContent = '✓ Técnico Acionado';
       dispatchTechBtn.disabled = true;
       setTimeout(() => { dispatchTechBtn.textContent = orig; dispatchTechBtn.disabled = false; }, 4000);
     });
@@ -265,7 +265,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (exportLogsBtn) {
     exportLogsBtn.addEventListener('click', () => {
       const orig = exportLogsBtn.innerHTML;
-      exportLogsBtn.innerHTML = '<span class="material-symbols-outlined">check_circle</span> Logs Exported';
+      exportLogsBtn.innerHTML = '<span class="material-symbols-outlined">check_circle</span> Registros Exportados!';
       exportLogsBtn.disabled = true;
       setTimeout(() => { exportLogsBtn.innerHTML = orig; exportLogsBtn.disabled = false; }, 3000);
     });
@@ -278,10 +278,10 @@ document.addEventListener('DOMContentLoaded', () => {
     muteAllBtn.addEventListener('click', () => {
       muted = !muted;
       if (muted) {
-        muteAllBtn.innerHTML = '<span class="material-symbols-outlined">notifications_active</span> Unmute All';
+        muteAllBtn.innerHTML = '<span class="material-symbols-outlined">notifications_active</span> Desilenciar Todos';
         muteAllBtn.style.background = 'var(--on-surface-variant)';
       } else {
-        muteAllBtn.innerHTML = '<span class="material-symbols-outlined">notifications_off</span> Mute All';
+        muteAllBtn.innerHTML = '<span class="material-symbols-outlined">notifications_off</span> Silenciar Todos';
         muteAllBtn.style.background = '';
       }
       console.log(`[FarmAI] Alerts ${muted ? 'muted' : 'unmuted'}`);
@@ -528,7 +528,7 @@ Responda sempre em português do Brasil. Seja preciso, prático e objetivo. Use 
     if (chatTyping) chatTyping.style.display = 'none';
   }
 
-  /* ── Call Anthropic API ──────────────────────────────────── */
+  /* ── Call Ollama API (local) ─────────────────────────────── */
   async function callClaudeAPI(userMessage) {
     conversationHistory.push({ role: 'user', content: userMessage });
 
@@ -536,43 +536,43 @@ Responda sempre em português do Brasil. Seja preciso, prático e objetivo. Use 
     chatSendBtn.disabled = true;
     chatInput.disabled = true;
 
+    // Monta o histórico com system prompt como primeira mensagem
+    const messages = [
+      { role: 'system', content: SYSTEM_PROMPT },
+      ...conversationHistory
+    ];
+
     try {
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
+      const response = await fetch('http://localhost:11434/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 1000,
-          system: SYSTEM_PROMPT,
-          messages: conversationHistory,
+          model: 'sike_aditya/AgriLlama',
+          messages: messages,
+          stream: false,
         }),
       });
 
       if (!response.ok) {
-        throw new Error(`API error: ${response.status}`);
+        throw new Error(`Erro na API: ${response.status}`);
       }
 
       const data = await response.json();
-
-      // Extract text from response content blocks
-      const assistantText = data.content
-        .filter(block => block.type === 'text')
-        .map(block => block.text)
-        .join('');
+      const assistantText = data.message?.content || 'Sem resposta do modelo.';
 
       hideTyping();
       appendMessage(assistantText, 'assistant');
 
-      // Store assistant reply in history
+      // Salva resposta no histórico
       conversationHistory.push({ role: 'assistant', content: assistantText });
 
     } catch (err) {
       hideTyping();
-      console.error('[FarmAI Chat] API error:', err);
+      console.error('[FarmAI Chat] Erro Ollama:', err);
       appendMessage(
-        'Desculpe, não consegui me conectar ao servidor no momento. Verifique sua conexão e tente novamente.',
+        'Não foi possível conectar ao Ollama. Verifique se ele está rodando na sua máquina e tente novamente.',
         'assistant'
       );
     } finally {

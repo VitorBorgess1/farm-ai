@@ -95,23 +95,23 @@
       <!-- Hero Header -->
       <section class="dash-hero">
         <div class="dash-hero-text">
-          <h2 class="dash-hero-title">Dashboard</h2>
+          <h2 class="dash-hero-title">Painel De Controle</h2>
           <div class="dash-hero-status">
             <span class="status-badge status-badge--healthy">
               <span class="status-dot"></span>
-              Healthy
+              Saúde
             </span>
-            <span class="dash-hero-sync">Last sync: 2 minutes ago</span>
+            <span class="dash-hero-sync">Última sincronização: 2 minutos atrás</span>
           </div>
         </div>
         <div class="dash-hero-actions">
           <button class="btn-secondary btn-icon">
             <span class="material-symbols-outlined">file_download</span>
-            Export Report
+            Exportar Relatório
           </button>
           <button class="btn-primary btn-icon" id="manualIrrigationBtn">
             <span class="material-symbols-outlined filled">water_drop</span>
-            Manual Irrigation
+            Irrigação Manual
           </button>
         </div>
       </section>
@@ -128,7 +128,7 @@
             <span class="badge badge-primary-sm">Normal</span>
           </div>
           <div class="stat-card-body">
-            <p class="stat-card-label">Soil Moisture</p>
+            <p class="stat-card-label">Umidade do Solo</p>
             <h3 class="stat-card-value">42<span class="stat-card-unit">%</span></h3>
           </div>
           <div class="stat-card-bar">
@@ -142,15 +142,15 @@
             <div class="icon-box icon-secondary">
               <span class="material-symbols-outlined">science</span>
             </div>
-            <span class="badge badge-secondary-sm">Optimal</span>
+            <span class="badge badge-secondary-sm">Ideal</span>
           </div>
           <div class="stat-card-body">
-            <p class="stat-card-label">pH Level</p>
+            <p class="stat-card-label">Nível de pH</p>
             <h3 class="stat-card-value">6.5<span class="stat-card-unit">pH</span></h3>
           </div>
           <div class="ph-scale-labels">
-            <span>Acidic</span>
-            <span>Alkaline</span>
+            <span>Ácido</span>
+            <span>Alcalino</span>
           </div>
           <div class="ph-scale-bar">
             <div class="ph-scale-indicator" style="left: 48%"></div>
@@ -163,15 +163,15 @@
             <div class="icon-box icon-tertiary">
               <span class="material-symbols-outlined filled">wb_sunny</span>
             </div>
-            <span class="badge badge-error-sm">Warning</span>
+            <span class="badge badge-error-sm">Atenção</span>
           </div>
           <div class="stat-card-body">
-            <p class="stat-card-label">Luminosity</p>
+            <p class="stat-card-label">Luminosidade</p>
             <h3 class="stat-card-value">70<span class="stat-card-unit">%</span></h3>
           </div>
           <div class="stat-card-warning">
             <span class="material-symbols-outlined">trending_up</span>
-            12% above yesterday's peak
+            12% acima do pico de ontem
           </div>
         </div>
 
@@ -183,7 +183,7 @@
         <!-- Field Map -->
         <div class="field-map-card">
           <div class="field-map-img">
-            <img alt="Aerial view of agricultural fields"
+            <img alt="Vista aérea de campos agrícolas"
               src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQX82nIdCBcyV9TdXqap6pH0Kv8H4120FSCqCxFlFkYoQRp7oLcIn7LET2UpKGkX58yxKsgIVpCLQBNwr_9rx39qTZaDLyBlcISmYk6DtkOllHI4hA2Ngc3Z-eprzM5ZGhSfG9Tcj4F4HfZy58RRNSZfCjImU_6vqF1BlMc9zckXiOg1awS8ata1PEKtJgaFQ-OLRM13WZ_lDW8P5ZQdwVy54KJW5kZruanojVKZ1udiWIpYMqg_a2plg1XQlT31a-gUUcLZnoNMFx"/>
           </div>
           <!-- Heatmap Overlay with sensors -->
@@ -192,16 +192,16 @@
             <div class="sensor-marker" style="top: 20%; left: 30%;">
               <div class="sensor-dot sensor-dot--primary sensor-dot--pulse"></div>
               <div class="sensor-tooltip">
-                <p class="sensor-tooltip-label">Sensor Node 04</p>
-                <p class="sensor-tooltip-value">44% Moisture</p>
+                <p class="sensor-tooltip-label">Nó Sensor 04</p>
+                <p class="sensor-tooltip-value">44% Umidade</p>
               </div>
             </div>
             <!-- Sensor 12 -->
             <div class="sensor-marker" style="top: 60%; left: 70%;">
               <div class="sensor-dot sensor-dot--error"></div>
               <div class="sensor-tooltip">
-                <p class="sensor-tooltip-label">Sensor Node 12</p>
-                <p class="sensor-tooltip-value sensor-tooltip-value--error">Low pH Alert</p>
+                <p class="sensor-tooltip-label">Nó Sensor 12</p>
+                <p class="sensor-tooltip-value sensor-tooltip-value--error">Alerta de pH Baixo</p>
               </div>
             </div>
             <!-- Sensor generic -->
@@ -212,25 +212,25 @@
           <!-- Map Controls -->
           <div class="map-controls-bottom">
             <div class="map-toggle-group">
-              <button class="map-toggle-btn map-toggle-btn--active">Heatmap</button>
+              <button class="map-toggle-btn map-toggle-btn--active">Mapa de Calor</button>
               <button class="map-toggle-btn">Visual</button>
               <button class="map-toggle-btn">NDVI</button>
             </div>
           </div>
           <!-- Field Layers Legend -->
           <div class="map-legend">
-            <h4 class="map-legend-title">Field Layers</h4>
+            <h4 class="map-legend-title">Camadas do Campo</h4>
             <div class="map-legend-item">
               <span class="map-legend-dot map-legend-dot--primary"></span>
-              <span>Optimal Soil</span>
+              <span>Solo Ideal</span>
             </div>
             <div class="map-legend-item">
               <span class="map-legend-dot map-legend-dot--secondary"></span>
-              <span>High Growth</span>
+              <span>Alto Crescimento</span>
             </div>
             <div class="map-legend-item">
               <span class="map-legend-dot map-legend-dot--error"></span>
-              <span>Irrigation Gap</span>
+              <span>Falha de Irrigação</span>
             </div>
           </div>
         </div>
@@ -238,11 +238,11 @@
         <!-- Moisture Trends Chart -->
         <div class="trends-card">
           <div class="trends-header">
-            <h3 class="trends-title">Moisture Trends</h3>
+            <h3 class="trends-title">Tendências de Umidade</h3>
             <select class="trends-select">
-              <option>Real-time</option>
-              <option>Past 24h</option>
-              <option>Last 7 days</option>
+              <option>Tempo Real</option>
+              <option>Últimas 24h</option>
+              <option>Últimos 7 dias</option>
             </select>
           </div>
           <div class="trends-chart">
@@ -268,12 +268,12 @@
           </div>
           <div class="trends-stats">
             <div class="trends-stat-box">
-              <p class="trends-stat-label">Average</p>
+              <p class="trends-stat-label">Média</p>
               <p class="trends-stat-value">41.2%</p>
             </div>
             <div class="trends-stat-box">
-              <p class="trends-stat-label">Volatility</p>
-              <p class="trends-stat-value">Low</p>
+              <p class="trends-stat-label">Volatilidade</p>
+              <p class="trends-stat-value">Baixa</p>
             </div>
           </div>
         </div>
@@ -283,19 +283,19 @@
       <!-- AI Insight Banner -->
       <section class="ai-insight-banner">
         <div class="ai-insight-bg">
-          <img alt="Farm machinery at sunset"
+          <img alt="Máquinas agrícolas ao pôr do sol"
             src="https://lh3.googleusercontent.com/aida-public/AB6AXuCwXYXw211XsEuj3m3U9kcNYRIe5mzwTSM55Od5fKH8SXpBFcFGjFhETY8KJOg6VB10jYUrXmtcYpoJZ-YFlDsy_e0_8crfosphFNEjT0qxCSQe_Cis80_YrbdaWb3Qg7b6ArCHFqgoVj0pKecatWWtDhnuY2o-QIMcdGChqZdHTHxq9BreU2LBF_meJJ-nDHj6hc56xup3qJlPQy9pJ4eAG8QL419wH-PX2X_y3XElcWIdyjxravSgdx8WXLjKygA5wekByWSY6iao"/>
         </div>
         <div class="ai-insight-content">
           <div class="ai-insight-heading">
             <span class="material-symbols-outlined">auto_awesome</span>
-            <h3>AI Insight of the Day</h3>
+            <h3>Insight de IA do Dia</h3>
           </div>
           <p class="ai-insight-text">
-            "Precipitation models indicate a 70% chance of rain in 48 hours. We recommend
-            <strong>suspending manual irrigation</strong> for Section B until Friday to prevent saturation."
+            "Modelos de precipitação indicam 70% de chance de chuva em 48 horas. Recomendamos
+            <strong>suspender a irrigação manual</strong> na Seção B até sexta-feira para evitar saturação."
           </p>
-          <button class="btn-insight">Apply Smart Recommendation</button>
+          <button class="btn-insight">Aplicar Recomendação Inteligente</button>
         </div>
         <div class="ai-insight-glow"></div>
       </section>
