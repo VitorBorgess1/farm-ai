@@ -7,11 +7,11 @@
 // 1. Configuração SupaBase
 const supabaseUrl = 'https://bydyipretbicpvbqmuvb.supabase.co';
 const supabaseKey = 'sb_publishable_2RPgrQBaMC4utot6oGU-gQ_jVeJ3a9k';
-const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 // 2. Função para buscar os dados reais e substituir a tabela estática
 async function carregarLeituras() {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
         .from('leituras_solo')
         .select('created_at, sensor_id, umidade_percentual, ph')
         .order('created_at', { ascending: false })
