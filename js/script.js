@@ -4,6 +4,34 @@
    Shared across all pages + page-specific handlers
    ============================================================ */
 
+// 1. Configuração SupaBase
+const supabaseUrl = 'https://bydyipretbicpvbqmuvb.supabase.co/rest/v1/';
+const supabaseKey = 'sb_publishable_2RPgrQBaMC4utot6oGU-gQ_jVeJ3a9k';
+const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+// 2. Função para buscar os dados reais e substituir a tabela estática
+async function carregarLeituras() {
+    // Busca as últimas 10 leituras no banco
+    const { data, error } = await supabase
+        .from('leituras_solo')
+        .select('created_at, sensor_id, umidade_percentual, ph')
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+    if (error) {
+        console.error("Erro ao buscar leituras:", error);
+        return;
+    }
+
+    console.log("Dados que vieram do Supabase:", data);
+    
+}
+
+// 3. Chama a função assim que a página carregar
+document.addEventListener('DOMContentLoaded', () => {
+    carregarLeituras();
+});   
+
 document.addEventListener('DOMContentLoaded', () => {
 
   /* ── Detect current page ─────────────────────────────────── */
