@@ -451,7 +451,7 @@ async function carregarLeituras() {
   const triggerBtn     = document.getElementById('aiChatTriggerBtn');
 
   /* Only run chat logic if overlay elements exist on the page */
-  if (!chatOverlay || !triggerInput) return;
+  if (chatOverlay && triggerInput) {
 
   /* ── Conversation history for the API ───────────────────── */
   const conversationHistory = [];
@@ -657,4 +657,4 @@ Responda sempre em português do Brasil. Seja preciso, prático e objetivo. Use 
     // Already handled above; this redundancy is intentional for clarity.
   });
 
-});
+};
