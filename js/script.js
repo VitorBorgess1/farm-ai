@@ -5,13 +5,12 @@
    ============================================================ */
 
 // 1. Configuração SupaBase
-const supabaseUrl = 'https://bydyipretbicpvbqmuvb.supabase.co/rest/v1/';
+const supabaseUrl = 'https://bydyipretbicpvbqmuvb.supabase.co';
 const supabaseKey = 'sb_publishable_2RPgrQBaMC4utot6oGU-gQ_jVeJ3a9k';
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 // 2. Função para buscar os dados reais e substituir a tabela estática
 async function carregarLeituras() {
-    // Busca as últimas 10 leituras no banco
     const { data, error } = await supabase
         .from('leituras_solo')
         .select('created_at, sensor_id, umidade_percentual, ph')
@@ -23,16 +22,38 @@ async function carregarLeituras() {
         return;
     }
 
-    console.log("Dados que vieram do Supabase:", data);
+    // 2.1 Captura o corpo da tabela no HTML
+    const tbody = document.getElementById('corpoTabelaLeituras');
     
+    // 2.2 Limpa qualquer conteúdo (como as linhas falsas se você não as apagou do HTML)
+    tbody.innerHTML = ''; 
+
+    // 2.3 Se não houver dados, mostra uma mensagem amigável
+    if (!data || data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nenhuma leitura encontrada no banco.</td></tr>';
+        return;
+    }
+
+    // 3. Percorre os dados do banco e cria as linhas dinamicamente
+    data.forEach(leitura => {
+        // Pega o Timestamp do banco e formata só a hora (Ex: 14:30:22)
+        const dataFormatada = new Date(leitura.created_at);
+        const horaMinutoSegundo = dataFormatada.toLocaleTimeString('pt-BR');
+
+        // Cria a estrutura HTML da linha com os dados da variável "leitura"
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td class="mon-td-time">${horaMinutoSegundo}</td>
+            <td class="mon-td-id">${leitura.sensor_id ? leitura.sensor_id.substring(0,8) : 'S/N'}</td>
+            <td class="mon-td-value">${leitura.umidade_percentual || 0}%</td>
+            <td>${leitura.ph || '-'}</td>
+            <td><span class="table-badge table-badge--active">Ativo</span></td>
+        `;
+
+        // 4. Adiciona a linha finalizada dentro da tabela
+        tbody.appendChild(tr);
+    });
 }
-
-// 3. Chama a função assim que a página carregar
-document.addEventListener('DOMContentLoaded', () => {
-    carregarLeituras();
-});   
-
-document.addEventListener('DOMContentLoaded', () => {
 
   /* ── Detect current page ─────────────────────────────────── */
   const currentFile = window.location.pathname.split('/').pop() || 'index.html';
