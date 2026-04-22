@@ -4,8 +4,75 @@
    Shared across all pages + page-specific handlers
    ============================================================ */
 
-document.addEventListener('DOMContentLoaded', () => {
+// 1. Configuração SupaBase
+const supabaseUrl = 'https://bydyipretbicpvbqmuvb.supabase.co';
+const supabaseKey = 'sb_publishable_2RPgrQBaMC4utot6oGU-gQ_jVeJ3a9k';
+const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
+// 2. Função para buscar os dados reais e substituir a tabela estática
+async function carregarLeituras() {
+    console.log("1. A função carregarLeituras começou a rodar!");
+
+    // Tenta encontrar a tabela no HTML
+    const tbody = document.getElementById('corpoTabelaLeituras');
+    console.log("2. Elemento tbody encontrado:", tbody);
+
+    if (!tbody) {
+        console.error("ERRO: O JavaScript não encontrou o id 'corpoTabelaLeituras' no HTML.");
+        return; // Para aqui se não achar a tabela
+    }
+
+    try {
+        console.log("3. Pedindo os dados ao Supabase...");
+        
+        // Lembra de usar o supabaseClient que renomeamos!
+        const { data, error } = await supabaseClient
+            .from('leituras_solo')
+            .select('created_at, sensor_id, umidade_percentual, ph')
+            .order('created_at', { ascending: false })
+            .limit(10);
+
+        if (error) {
+            console.error("ERRO do Supabase:", error);
+            return;
+        }
+
+        console.log("4. Resposta do Supabase chegou! Dados:", data);
+
+        // Limpa a tabela
+        tbody.innerHTML = ''; 
+
+        // Se o banco estiver vazio
+        if (!data || data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nenhuma leitura encontrada no banco.</td></tr>';
+            return;
+        }
+
+        // Desenha as linhas
+        data.forEach(leitura => {
+            const dataFormatada = new Date(leitura.created_at);
+            const horaMinutoSegundo = dataFormatada.toLocaleTimeString('pt-BR');
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="mon-td-time">${horaMinutoSegundo}</td>
+                <td class="mon-td-id">${leitura.sensor_id ? leitura.sensor_id.substring(0,8) : 'S/N'}</td>
+                <td class="mon-td-value">${leitura.umidade_percentual || 0}%</td>
+                <td>${leitura.ph || '-'}</td>
+                <td><span class="table-badge table-badge--active">Ativo</span></td>
+            `;
+            tbody.appendChild(tr);
+        });
+        
+        console.log("5. Mágica feita! Linhas desenhadas na tabela.");
+
+    } catch (err) {
+        console.error("ERRO INESPERADO no código:", err);
+    }
+}
+document.addEventListener('DOMContentLoaded', () => {
+    carregarLeituras();
+});
   /* ── Detect current page ─────────────────────────────────── */
   const currentFile = window.location.pathname.split('/').pop() || 'index.html';
 
@@ -402,7 +469,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const triggerBtn     = document.getElementById('aiChatTriggerBtn');
 
   /* Only run chat logic if overlay elements exist on the page */
-  if (!chatOverlay || !triggerInput) return;
+  if (chatOverlay && triggerInput) {
 
   /* ── Conversation history for the API ───────────────────── */
   const conversationHistory = [];
@@ -631,4 +698,4 @@ document.addEventListener('DOMContentLoaded', () => {
     // Already handled above; this redundancy is intentional for clarity.
   });
 
-});
+};
