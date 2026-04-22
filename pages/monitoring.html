@@ -77,6 +77,10 @@
         </div>
       </div>
       <div class="topbar-right">
+        <!--
+          O badge "Ao Vivo" é injetado aqui dinamicamente pelo script.
+          Ele aparece assim que a conexão Realtime é estabelecida.
+        -->
         <button class="icon-btn">
           <span class="material-symbols-outlined">notifications</span>
         </button>
@@ -115,6 +119,10 @@
             <span class="material-symbols-outlined">compare_arrows</span>
             Comparar Sensores
           </button>
+          <!--
+            O date picker personalizado é injetado aqui pelo script
+            quando o filtro "Personalizado" é selecionado.
+          -->
         </div>
       </header>
 
@@ -134,35 +142,23 @@
             <div class="mon-chart-kpi">
               <div class="mon-chart-kpi-text">
                 <p class="mon-chart-kpi-label">Média Atual</p>
-                <p class="mon-chart-kpi-value">42.8%</p>
+                <!--
+                  Valor atualizado dinamicamente pelo script.
+                  Mostra "--" até os dados chegarem.
+                -->
+                <p class="mon-chart-kpi-value">--</p>
               </div>
               <span class="material-symbols-outlined mon-chart-icon">water_drop</span>
             </div>
           </div>
 
-          <!-- SVG Chart -->
+          <!--
+            .mon-chart-body: O SVG estático original é SUBSTITUÍDO por um
+            <canvas id="mainChartCanvas"> pelo script na inicialização.
+            Deixe o elemento vazio aqui para o script popular.
+          -->
           <div class="mon-chart-body">
-            <svg class="mon-svg" viewBox="0 0 300 150" preserveAspectRatio="none">
-              <defs>
-                <linearGradient id="monGrad1" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stop-color="var(--primary)" stop-opacity="0.4"/>
-                    <stop offset="100%" stop-color="var(--primary)" stop-opacity="0"/>
-                </linearGradient>
-              </defs>
-              <!-- Area fill Alpha -->
-              <path d="M0,100 C50,80 100,120 150,90 C200,60 250,110 300,70 L300,150 L0,150 Z"
-                    fill="url(#monGrad1)" opacity="0.3"/>
-              <!-- Line Alpha -->
-              <path d="M0,100 C50,80 100,120 150,90 C200,60 250,110 300,70"
-                    fill="none" stroke="var(--primary-container)" stroke-width="3"/>
-              <!-- Line Beta (dashed) -->
-              <path d="M0,110 C60,130 120,70 180,100 C240,130 280,80 300,60"
-                    fill="none" stroke="var(--secondary)" stroke-dasharray="6 4" stroke-width="2"/>
-            </svg>
-            <!-- Floating tooltip -->
-            <div class="mon-chart-tooltip">
-              Sensor Alpha: 64%
-            </div>
+            <!-- Chart.js canvas injetado aqui pelo monitoring.js -->
           </div>
         </section>
 
@@ -175,7 +171,10 @@
               <div>
                 <h3 class="mon-metric-label">Temperatura</h3>
                 <div class="mon-metric-value-row">
-                  <span class="mon-metric-value">24.5</span>
+                  <!--
+                    Valor atualizado pelo script com a última leitura.
+                  -->
+                  <span class="mon-metric-value">--</span>
                   <span class="mon-metric-unit">°C</span>
                 </div>
               </div>
@@ -183,15 +182,12 @@
                 <span class="material-symbols-outlined">thermostat</span>
               </div>
             </div>
-            <!-- Mini bar chart -->
+            <!--
+              .mon-mini-bars: Substituído por <canvas id="tempChartCanvas">
+              pelo script para exibir um gráfico de barras real por hora.
+            -->
             <div class="mon-mini-bars">
-              <div class="mon-mini-bar" style="height: 50%"></div>
-              <div class="mon-mini-bar" style="height: 67%"></div>
-              <div class="mon-mini-bar" style="height: 100%"></div>
-              <div class="mon-mini-bar" style="height: 75%"></div>
-              <div class="mon-mini-bar" style="height: 50%"></div>
-              <div class="mon-mini-bar" style="height: 80%"></div>
-              <div class="mon-mini-bar" style="height: 75%"></div>
+              <!-- Canvas de temperatura injetado aqui pelo monitoring.js -->
             </div>
           </div>
 
@@ -201,12 +197,16 @@
               <div>
                 <h3 class="mon-metric-label mon-metric-label--light">Acidez do Solo (pH)</h3>
                 <div class="mon-metric-value-row">
-                  <span class="mon-metric-value">6.2</span>
+                  <!--
+                    Valor e badge de status (Saudável/Ácido/Alcalino)
+                    atualizados pelo script conforme os dados chegam.
+                  -->
+                  <span class="mon-metric-value">--</span>
                 </div>
               </div>
               <span class="mon-metric-badge-healthy">
                 <span class="mon-metric-badge-dot"></span>
-                Saudável
+                <span>--</span>
               </span>
             </div>
             <span class="material-symbols-outlined mon-metric-bg-icon">science</span>
@@ -222,6 +222,10 @@
         <div class="mon-table-section">
           <div class="mon-table-header">
             <h2 class="mon-section-title">Leituras Precisas</h2>
+            <!--
+              Botão de exportar: dispara exportCSV() no script.
+              Gera um .csv com todas as leituras carregadas em memória.
+            -->
             <button class="mon-export-btn">
               Exportar CSV
               <span class="material-symbols-outlined">download</span>
@@ -238,6 +242,12 @@
                   <th>Status</th>
                 </tr>
               </thead>
+              <!--
+                #corpoTabelaLeituras: populado dinamicamente pelo script.
+                Exibe as 50 leituras mais recentes.
+                Novas inserções via Realtime são adicionadas automaticamente
+                sem recarregar a página.
+              -->
               <tbody id="corpoTabelaLeituras">
               </tbody>
             </table>
@@ -256,6 +266,11 @@
               <p class="mon-analyst-desc">
                 Detectamos uma tendência de queda na umidade do setor Alpha. Recomendamos acionar o sistema de gotejamento às 18:00 para otimizar a absorção radicular.
               </p>
+              <!--
+                #executeIrrigationPlan: ao clicar, o botão executa
+                uma chamada (ex: Edge Function Supabase ou webhook).
+                Customize a lógica dentro de bindEvents() no script.
+              -->
               <button class="btn-mon-analyst" id="executeIrrigationPlan">
                 Executar Plano Automático
               </button>
@@ -269,15 +284,14 @@
               <span class="material-symbols-outlined">compare</span>
               Seletor de Comparação
             </h4>
+            <!--
+              .mon-compare-list: Os sensores disponíveis são injetados
+              dinamicamente pelo script. Clique em cada sensor para
+              incluí-lo ou removê-lo da comparação no gráfico principal.
+              Os 2 primeiros sensores ficam selecionados por padrão.
+            -->
             <div class="mon-compare-list">
-              <div class="mon-compare-item">
-                <span>Sensor Alpha-01</span>
-                <span class="material-symbols-outlined mon-compare-check">check_circle</span>
-              </div>
-              <div class="mon-compare-item">
-                <span>Sensor Beta-04</span>
-                <span class="material-symbols-outlined mon-compare-check">check_circle</span>
-              </div>
+              <!-- Sensores injetados aqui pelo monitoring.js -->
               <button class="mon-compare-add">
                 <span class="material-symbols-outlined">add</span>
                 Adicionar Sensor
@@ -296,8 +310,17 @@
     <span class="material-symbols-outlined">add_chart</span>
   </button>
 
+  <!-- Supabase SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-  <script src="../js/script.js"></script>
+  <!--
+    ⚠️  ANTES DE USAR:
+    1. Abra monitoring.js
+    2. Substitua SUPABASE_URL e SUPABASE_ANON_KEY pelas suas credenciais
+    3. Ajuste o nome da tabela (padrão: 'leituras') e colunas se necessário
+    4. Habilite Realtime na tabela pelo painel do Supabase:
+       Table Editor → leituras → Enable Realtime
+  -->
+  <script src="../js/monitoring.js"></script>
 </body>
 </html>
