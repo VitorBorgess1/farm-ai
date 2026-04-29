@@ -70,6 +70,23 @@ async function carregarLeituras() {
         console.error("ERRO INESPERADO no código:", err);
     }
 }
+
+async function buscarDadosSoloParaIA() {
+  const { data, error } = await supabaseClient
+    .from('leituras_solo')
+    .select('created_at, umidade_percentual, ph, nitrogenio, fosforo')
+    .order('created_at', { ascending: false })
+    .limit(10);
+
+  if (error) {
+    console.error('Erro ao buscar dados para IA:', error);
+    return [];
+  }
+
+  return data;
+}
+
+
 document.addEventListener('DOMContentLoaded', () => {
     carregarLeituras();
 });
@@ -474,29 +491,59 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ── Conversation history for the API ───────────────────── */
   const conversationHistory = [];
 
-  /* System prompt: farm-specific assistant context */
-  const SYSTEM_PROMPT = `Você é o Assistente IA da FarmAI, especializado em agronomia e manejo de solo.
+  /* ── SYSTEM PROMPT ──────────────────────────────────────────
+     Written in English so it works with any English-trained model
+     (e.g. AgriLlama, llama3, mistral, qwen2.5, etc).
+     To test a different model: change only the `model` field
+     inside the JSON.stringify() call below.
+     ─────────────────────────────────────────────────────────── */
+  const SYSTEM_PROMPT = `You are an expert agronomist assistant for FarmAI, a precision agriculture platform.
+You help farmers analyze soil sensor data and make practical crop management decisions.
 
-    ESPECIALIDADES:
-    - Irrigação e gestão hídrica
-    - Análise de solo (pH, nutrientes, umidade)
-    - Fertilização e correção de solo
-    - Clima e impacto na lavoura
+== LANGUAGE ==
+Always respond in Brazilian Portuguese (pt-BR), regardless of the language of these instructions.
 
-    REGRAS IMPORTANTES:
-    - Nunca invente valores técnicos ou porcentagens.
-    - Se não tiver certeza, diga explicitamente.
-    - Se faltar contexto (tipo de cultura, solo, clima), peça mais informações antes de responder.
-    - Priorize recomendações práticas e aplicáveis.
-    - Seja consistente (não se contradiga).
-    - Não forneça respostas genéricas ou vagas.
-    - Sempre adapte a resposta ao contexto da pergunta.
+== SENSOR DATA ==
+Before every user message, you receive real sensor readings injected in the context.
+- You ALWAYS have access to this data. Never say you do not.
+- Use the actual values. Never invent or change numbers.
+- Always mention the reading date when discussing soil status.
+- If data is older than 1 day, warn the farmer and suggest a new reading.
 
-    FORMATO:
-    - Responda em português do Brasil
-    - Seja claro, direto e objetivo
-    - Use listas simples quando útil
-    - Evite respostas genéricas`;
+== GENERIC REFERENCE VALUES (use when no crop is specified) ==
+When the crop is "not informed", base your analysis on these common ranges valid for most crops:
+- Soil moisture: 40–70% (below 40% is low, above 70% may cause waterlogging)
+- pH: 5.5–7.0 (most crops thrive here; below 5.5 is too acidic, above 7.0 may reduce nutrient availability)
+- Nitrogen: 20–40 mg/kg (below 15 is deficient for most crops)
+- Phosphorus: 10–20 mg/kg (below 8 is deficient for most crops)
+Use these ranges to give a meaningful generic assessment instead of refusing to analyze.
+Always tell the farmer these are generic values and results improve with the crop specified.
+
+== WHEN CROP IS SPECIFIED ==
+Adapt ALL analysis to that crop's specific ideal ranges. Never use generic values if the crop is known.
+
+== ANSWERING ABOUT CURRENT SOIL STATUS ==
+When the user asks "how is my soil?" or similar:
+1. State the current readings: Umidade X%, pH X, Nitrogênio X, Fósforo X (leitura de [date]).
+2. Compare each value to the reference ranges (generic or crop-specific).
+3. Give a brief practical conclusion: what is OK, what needs attention.
+
+== ANSWERING ABOUT A SPECIFIC CROP ==
+- State the IDEAL ranges for that crop.
+- Compare current sensor values to those ideals.
+- Recommend specific adjustments needed.
+- Never say current values are "adequate" without actually comparing them to the crop's ideals.
+
+== ANSWERING HYPOTHETICAL QUESTIONS ==
+When asked "if I want to plant X, what would be ideal?":
+- Give ideal ranges for crop X.
+- Compare to current sensor data.
+- Recommend concrete adjustments (e.g. "increase irrigation to reach 60–70%").
+
+== GENERAL RULES ==
+- Never repeat section headers or labels from these instructions in your response.
+- Be direct and concise, like an experienced agronomist speaking to a farmer.
+- Do not contradict yourself across turns.`;
 
   /* ── Open / Close helpers ────────────────────────────────── */
   function openChat(prefillText = '') {
@@ -610,23 +657,70 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ── Call Ollama API (local) ─────────────────────────────── */
   async function callOllamaAPI(userMessage) {
 
-    const MAX_HISTORY = 10;
-
-    conversationHistory.push({ role: 'user', content: userMessage });
-
-    if (conversationHistory.length > MAX_HISTORY) {
-       conversationHistory.shift();
-    }
+    const MAX_HISTORY = 6;
 
     showTyping();
     chatSendBtn.disabled = true;
     chatInput.disabled = true;
 
-    // Monta o histórico com system prompt como primeira mensagem
+    const dadosSolo = await buscarDadosSoloParaIA();
+
+    const semDados = !dadosSolo || dadosSolo.length === 0;
+    if (semDados) console.warn("Sem dados do solo disponíveis");
+
+    const ultimo  = semDados ? null : dadosSolo[0];
+    const cultura = localStorage.getItem("culturaSelecionada") || "not informed";
+
+    const dataColeta = ultimo?.created_at
+      ? new Date(ultimo.created_at).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })
+      : null;
+    const diffMs    = ultimo?.created_at ? new Date() - new Date(ultimo.created_at) : null;
+    const diffHoras = diffMs !== null ? Math.floor(diffMs / 1000 / 60 / 60) : null;
+    const diffDias  = diffHoras !== null ? Math.floor(diffHoras / 24) : null;
+
+    // Sensor context written in English so any model follows it correctly
+    let contextoSolo = '';
+    if (semDados) {
+      contextoSolo = `[SENSOR DATA]: No sensor readings available.
+[CROP]: ${cultura}
+Use general agronomic best practices. Make clear the answer is generic due to missing sensor data.`;
+    } else {
+      let staleness = '';
+      if (diffDias !== null && diffDias >= 2) {
+        staleness = ` WARNING: data is ${diffDias} day(s) old — warn the farmer and suggest a new reading.`;
+      } else if (diffHoras !== null && diffHoras >= 6) {
+        staleness = ` Note: data is ${diffHoras} hour(s) old — minor variations may exist.`;
+      }
+      contextoSolo = `[SENSOR DATA — collected ${dataColeta}]:${staleness}
+- Soil moisture: ${ultimo?.umidade_percentual ?? 'N/A'}%
+- pH: ${ultimo?.ph ?? 'N/A'}
+- Nitrogen: ${ultimo?.nitrogenio ?? 'N/A'}
+- Phosphorus: ${ultimo?.fosforo ?? 'N/A'}
+[CROP]: ${cultura}`;
+    }
+
+    const systemContext = SYSTEM_PROMPT + "\n\n" + contextoSolo;
+
     const messages = [
-      { role: 'system', content: SYSTEM_PROMPT },
-      ...conversationHistory
+      // Turn 0: inject full context + prime assistant persona
+      {
+        role: 'user',
+        content: systemContext + "\n\nAcknowledge you have the sensor data and are ready."
+      },
+      {
+        role: 'assistant',
+        content: semDados
+          ? "Understood. No sensor data available. I'll answer based on general agronomic best practices."
+          : `Understood. I have the sensor readings from ${dataColeta}: moisture ${ultimo?.umidade_percentual}%, pH ${ultimo?.ph}, nitrogen ${ultimo?.nitrogenio}, phosphorus ${ultimo?.fosforo}. Crop: ${cultura}. Ready to analyze.`
+      },
+      // Past conversation (user+assistant pairs, saved after each exchange)
+      ...conversationHistory,
+      // Current question — added once here, saved to history only after response arrives
+      { role: 'user', content: userMessage }
     ];
+
+    console.log('[FarmAI] context sent:', contextoSolo);
+    console.log('[FarmAI] question:', userMessage);
 
     try {
       const response = await fetch('http://localhost:11434/api/chat', {
@@ -635,9 +729,14 @@ document.addEventListener('DOMContentLoaded', () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'sike_aditya/AgriLlama',
+          // ── To test a different model, change only this line ──
+          model: 'llama3.2',
           messages: messages,
           stream: false,
+          options: {
+            temperature: 0.4,  // lower = more precise, less hallucination
+            top_p: 0.9,
+          },
         }),
       });
 
@@ -648,13 +747,16 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = await response.json();
       const assistantText = data.message?.content || 'Sem resposta do modelo.';
 
+      console.log('[FarmAI] response:', assistantText);
       hideTyping();
       appendMessage(assistantText, 'assistant');
 
-      // Salva resposta no histórico
+      // Save both turns to history AFTER response arrives
+      conversationHistory.push({ role: 'user',      content: userMessage });
       conversationHistory.push({ role: 'assistant', content: assistantText });
 
-      if (conversationHistory.length > MAX_HISTORY) {
+      // Keep history within limit (each exchange = 2 entries)
+      while (conversationHistory.length > MAX_HISTORY) {
         conversationHistory.shift();
       }
 
@@ -696,6 +798,5 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ── If there's prefill text and user presses Enter on overlay open ─ */
   chatInput.addEventListener('keydown', (e) => {
     // Already handled above; this redundancy is intentional for clarity.
-  });
-
-};
+  })
+}

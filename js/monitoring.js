@@ -11,7 +11,7 @@
 const SUPABASE_URL      = 'https://bydyipretbicpvbqmuvb.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_2RPgrQBaMC4utot6oGU-gQ_jVeJ3a9k';
 
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabaseClientMonitoring = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ────────────────────────────────────────────────────────────
 // 2. ESTADO GLOBAL
@@ -48,7 +48,7 @@ const fmtD = iso => new Date(iso).toLocaleString('pt-BR', { day: '2-digit', mont
 // 4. BUSCA DE DADOS
 // ────────────────────────────────────────────────────────────
 async function fetchSensors() {
-  const { data, error } = await supabaseClient
+  const { data, error } = await supabaseClientMonitoring
     .from('leituras_solo')
     .select('sensor_id')
     .not('sensor_id', 'is', null);
@@ -63,7 +63,7 @@ async function fetchSensors() {
 async function fetchReadings() {
   const startDate = getStartDate(state.filter).toISOString();
 
-  let query = supabaseClient
+  let query = supabaseClientMonitoring
     .from('leituras_solo')
     .select('id, created_at, sensor_id, ph, umidade_percentual, nitrogenio, fosforo')
     .gte('created_at', startDate)
@@ -372,7 +372,7 @@ function exportCSV() {
 function subscribeRealtime() {
   if (state.realtimeChannel) supabase.removeChannel(state.realtimeChannel);
 
-  state.realtimeChannel = supabaseClient
+  state.realtimeChannel = supabaseClientMonitoring
     .channel('leituras-solo-rt')
     .on('postgres_changes',
       { event: 'INSERT', schema: 'public', table: 'leituras_solo' },
