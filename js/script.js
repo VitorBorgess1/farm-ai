@@ -13,19 +13,17 @@ const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 async function carregarLeituras() {
     console.log("1. A função carregarLeituras começou a rodar!");
 
-    // Tenta encontrar a tabela no HTML
     const tbody = document.getElementById('corpoTabelaLeituras');
     console.log("2. Elemento tbody encontrado:", tbody);
 
     if (!tbody) {
         console.error("ERRO: O JavaScript não encontrou o id 'corpoTabelaLeituras' no HTML.");
-        return; // Para aqui se não achar a tabela
+        return;
     }
 
     try {
         console.log("3. Pedindo os dados ao Supabase...");
-        
-        // Lembra de usar o supabaseClient que renomeamos!
+
         const { data, error } = await supabaseClient
             .from('leituras_solo')
             .select('created_at, sensor_id, umidade_percentual, ph')
@@ -39,16 +37,13 @@ async function carregarLeituras() {
 
         console.log("4. Resposta do Supabase chegou! Dados:", data);
 
-        // Limpa a tabela
-        tbody.innerHTML = ''; 
+        tbody.innerHTML = '';
 
-        // Se o banco estiver vazio
         if (!data || data.length === 0) {
             tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Nenhuma leitura encontrada no banco.</td></tr>';
             return;
         }
 
-        // Desenha as linhas
         data.forEach(leitura => {
             const dataFormatada = new Date(leitura.created_at);
             const horaMinutoSegundo = dataFormatada.toLocaleTimeString('pt-BR');
@@ -63,7 +58,7 @@ async function carregarLeituras() {
             `;
             tbody.appendChild(tr);
         });
-        
+
         console.log("5. Mágica feita! Linhas desenhadas na tabela.");
 
     } catch (err) {
@@ -71,6 +66,7 @@ async function carregarLeituras() {
     }
 }
 
+// 3. Buscar dados do solo para IA (última leitura + histórico)
 async function buscarDadosSoloParaIA() {
   const { data, error } = await supabaseClient
     .from('leituras_solo')
@@ -86,10 +82,304 @@ async function buscarDadosSoloParaIA() {
   return data;
 }
 
+/* ────────────────────────────────────────────────────────────
+   LÓGICA DINÂMICA DA PÁGINA IA
+   Calcula Saúde do Solo, Última Leitura, Análise de Umidade,
+   Análise de pH e Recomendações de Nutrientes com base nos
+   dados reais do Supabase.
+   ──────────────────────────────────────────────────────────── */
+
+// Pontua um parâmetro com base nos limites ideais
+function pontuarParametro(valor, minIdeal, maxIdeal) {
+  if (valor === null || valor === undefined) return null;
+  const v = parseFloat(valor);
+  if (isNaN(v)) return null;
+
+  if (v >= minIdeal && v <= maxIdeal) return 100;
+
+  // Calcula desvio percentual em relação ao extremo mais próximo
+  const desvio = v < minIdeal
+    ? (minIdeal - v) / minIdeal
+    : (v - maxIdeal) / maxIdeal;
+
+  if (desvio <= 0.25) return 70;
+  return 40;
+}
+
+// Calcula saúde do solo (média das pontuações dos 4 parâmetros)
+function calcularSaudeSolo(leitura) {
+  const pontos = [
+    pontuarParametro(leitura.umidade_percentual, 40, 70),
+    pontuarParametro(leitura.ph, 5.5, 7.0),
+    pontuarParametro(leitura.nitrogenio, 20, 40),
+    pontuarParametro(leitura.fosforo, 10, 20),
+  ].filter(p => p !== null);
+
+  if (pontos.length === 0) return null;
+  return Math.round(pontos.reduce((a, b) => a + b, 0) / pontos.length);
+}
+
+// Retorna classificação textual da saúde
+function classificarSaude(saude) {
+  if (saude >= 90) return 'Excelente';
+  if (saude >= 70) return 'Boa';
+  if (saude >= 50) return 'Atenção';
+  return 'Crítica';
+}
+
+// Formata data/hora em pt-BR
+function formatarDataHora(isoString) {
+  if (!isoString) return '—';
+  return new Date(isoString).toLocaleString('pt-BR', {
+    day: '2-digit', month: '2-digit', year: 'numeric',
+    hour: '2-digit', minute: '2-digit'
+  });
+}
+
+// Análise de umidade: retorna { prioridade, titulo, desc, badgeClass, iconClass }
+function analisarUmidade(valor) {
+  const v = parseFloat(valor);
+
+  if (isNaN(v)) {
+    return {
+      prioridade: 'Sem dados',
+      titulo: 'Sem leitura de umidade disponível',
+      desc: 'Nenhum dado de umidade encontrado no banco. Verifique a conexão dos sensores.',
+      badgeClass: 'badge-secondary',
+      iconClass: 'icon-secondary',
+    };
+  }
+
+  if (v < 40) {
+    return {
+      prioridade: 'Alta Prioridade',
+      titulo: `Umidade abaixo da faixa ideal detectada (${v}%)`,
+      desc: 'O solo apresenta umidade abaixo do recomendado. Recomenda-se irrigação nas próximas horas para evitar ressecamento e possível perda de produtividade.',
+      badgeClass: 'badge-error',
+      iconClass: 'icon-error',
+    };
+  }
+
+  if (v > 70) {
+    return {
+      prioridade: 'Atenção',
+      titulo: `Umidade elevada detectada no solo (${v}%)`,
+      desc: 'A umidade do solo está acima da faixa recomendada. Evitar irrigação temporariamente e monitorar possível encharcamento ou desenvolvimento de fungos.',
+      badgeClass: 'badge-tertiary',
+      iconClass: 'icon-tertiary',
+    };
+  }
+
+  return {
+    prioridade: 'Normal',
+    titulo: `Umidade dentro da faixa recomendada (${v}%)`,
+    desc: 'O solo apresenta umidade adequada para a maioria das culturas. Manter monitoramento contínuo das leituras.',
+    badgeClass: 'badge-secondary',
+    iconClass: 'icon-secondary',
+  };
+}
+
+// Análise de pH: retorna { prioridade, titulo, desc, badgeClass }
+function analisarPH(valor) {
+  const v = parseFloat(valor);
+
+  if (isNaN(v)) {
+    return {
+      prioridade: '—',
+      titulo: 'Sem leitura de pH disponível',
+      desc: 'Nenhum dado de pH encontrado. Verifique os sensores.',
+      badgeClass: 'badge-secondary',
+    };
+  }
+
+  if (v < 5.5) {
+    return {
+      prioridade: 'Atenção',
+      titulo: `pH ácido detectado (${v})`,
+      desc: 'pH abaixo da faixa ideal. O solo apresenta acidez elevada, o que pode reduzir a disponibilidade de nutrientes. Considere calagem após análise agronômica.',
+      badgeClass: 'badge-tertiary',
+    };
+  }
+
+  if (v > 7.0) {
+    return {
+      prioridade: 'Atenção',
+      titulo: `pH alcalino detectado (${v})`,
+      desc: 'pH acima da faixa ideal. Monitorar disponibilidade de micronutrientes como ferro e manganês, que podem ser afetados pela alcalinidade.',
+      badgeClass: 'badge-tertiary',
+    };
+  }
+
+  return {
+    prioridade: 'Ideal',
+    titulo: `Nível de pH dentro da faixa recomendada (${v})`,
+    desc: 'O solo está equilibrado. Nenhuma correção de pH necessária no momento.',
+    badgeClass: 'badge-secondary',
+  };
+}
+
+// Análise de nutriente: retorna { titulo, desc, badge, badgeClass }
+function analisarNutriente(nome, valor, minIdeal, maxIdeal, unidade) {
+  const v = parseFloat(valor);
+
+  if (isNaN(v)) {
+    return {
+      titulo: `Sem leitura de ${nome}`,
+      desc: 'Dado não disponível na última leitura.',
+      badge: '—',
+      badgeClass: 'badge-secondary',
+      dotClass: 'dot-secondary',
+    };
+  }
+
+  if (v < minIdeal) {
+    return {
+      titulo: `${nome} abaixo do ideal (${v}${unidade})`,
+      desc: `Nível de ${nome.toLowerCase()} está baixo. Recomenda-se avaliar aplicação de corretivo com orientação agronômica.`,
+      badge: 'Prioridade Média',
+      badgeClass: 'badge-tertiary',
+      dotClass: 'dot-tertiary',
+    };
+  }
+
+  if (v > maxIdeal) {
+    return {
+      titulo: `${nome} acima do ideal (${v}${unidade})`,
+      desc: `Nível de ${nome.toLowerCase()} elevado. Evitar aplicação adicional e monitorar absorção pela cultura.`,
+      badge: 'Prioridade Baixa',
+      badgeClass: 'badge-secondary',
+      dotClass: 'dot-secondary',
+    };
+  }
+
+  return {
+    titulo: `${nome} dentro da faixa ideal (${v}${unidade})`,
+    desc: `Nível de ${nome.toLowerCase()} adequado. Manter cronograma de monitoramento.`,
+    badge: 'Prioridade Baixa',
+    badgeClass: 'badge-secondary',
+    dotClass: 'dot-secondary',
+  };
+}
+
+// Atualiza todos os elementos dinâmicos da página ia.html
+async function atualizarPaginaIA() {
+  const dados = await buscarDadosSoloParaIA();
+  const leitura = dados && dados.length > 0 ? dados[0] : null;
+
+  /* ── Hero: Saúde do Solo ──────────────────────────── */
+  const elSaude = document.getElementById('heroSaudeSolo');
+  if (elSaude) {
+    if (leitura) {
+      const saude = calcularSaudeSolo(leitura);
+      if (saude !== null) {
+        elSaude.textContent = `${saude}% — ${classificarSaude(saude)}`;
+      } else {
+        elSaude.textContent = 'Sem dados';
+      }
+    } else {
+      elSaude.textContent = 'Sem dados';
+    }
+  }
+
+  /* ── Hero: Última Leitura ─────────────────────────── */
+  const elUltimaLeitura = document.getElementById('heroUltimaLeitura');
+  if (elUltimaLeitura) {
+    elUltimaLeitura.textContent = leitura
+      ? formatarDataHora(leitura.created_at)
+      : 'Sem leituras';
+  }
+
+  /* ── Card Umidade ─────────────────────────────────── */
+  const analiseUmidade = analisarUmidade(leitura?.umidade_percentual);
+  const elUmidadeBadge  = document.getElementById('umidadeBadge');
+  const elUmidadeTitulo = document.getElementById('umidadeTitulo');
+  const elUmidadeDesc   = document.getElementById('umidadeDesc');
+  const elUmidadeIcon   = document.getElementById('umidadeIconBox');
+
+  if (elUmidadeBadge)  {
+    elUmidadeBadge.textContent = analiseUmidade.prioridade;
+    elUmidadeBadge.className = `badge ${analiseUmidade.badgeClass}`;
+  }
+  if (elUmidadeTitulo) elUmidadeTitulo.textContent = analiseUmidade.titulo;
+  if (elUmidadeDesc)   elUmidadeDesc.textContent   = analiseUmidade.desc;
+  if (elUmidadeIcon)   elUmidadeIcon.className = `icon-box ${analiseUmidade.iconClass}`;
+
+  /* ── Card pH ──────────────────────────────────────── */
+  const analisePH = analisarPH(leitura?.ph);
+  const elPhBadge  = document.getElementById('phBadge');
+  const elPhTitulo = document.getElementById('phTitulo');
+  const elPhDesc   = document.getElementById('phDesc');
+
+  if (elPhBadge)  {
+    elPhBadge.textContent = analisePH.prioridade;
+    elPhBadge.className = `badge ${analisePH.badgeClass}`;
+  }
+  if (elPhTitulo) elPhTitulo.textContent = analisePH.titulo;
+  if (elPhDesc)   elPhDesc.textContent   = analisePH.desc;
+
+  /* ── Card Nitrogênio ──────────────────────────────── */
+  const analiseN = analisarNutriente('Nitrogênio', leitura?.nitrogenio, 20, 40, ' mg/kg');
+  const elNTitulo = document.getElementById('recNitrogenioTitulo');
+  const elNDesc   = document.getElementById('recNitrogenioDesc');
+  const elNBadge  = document.getElementById('recNitrogenioBadge');
+  const elDotN    = document.getElementById('dotNitrogenio');
+
+  if (elNTitulo) elNTitulo.textContent = analiseN.titulo;
+  if (elNDesc)   elNDesc.textContent   = analiseN.desc;
+  if (elNBadge)  {
+    elNBadge.textContent = analiseN.badge;
+    elNBadge.className = `badge ${analiseN.badgeClass}`;
+  }
+  if (elDotN) elDotN.className = `dot ${analiseN.dotClass}`;
+
+  /* ── Card Fósforo ─────────────────────────────────── */
+  const analiseF = analisarNutriente('Fósforo', leitura?.fosforo, 10, 20, ' mg/kg');
+  const elFTitulo = document.getElementById('recFosforoTitulo');
+  const elFDesc   = document.getElementById('recFosforoDesc');
+  const elFBadge  = document.getElementById('recFosforoBadge');
+  const elDotF    = document.getElementById('dotFosforo');
+
+  if (elFTitulo) elFTitulo.textContent = analiseF.titulo;
+  if (elFDesc)   elFDesc.textContent   = analiseF.desc;
+  if (elFBadge)  {
+    elFBadge.textContent = analiseF.badge;
+    elFBadge.className = `badge ${analiseF.badgeClass}`;
+  }
+  if (elDotF) elDotF.className = `dot ${analiseF.dotClass}`;
+
+  /* ── Card Ações da Semana: timestamp ─────────────── */
+  const elAcoesTs = document.getElementById('acoesSemanaAtualizadoEm');
+  if (elAcoesTs) {
+    elAcoesTs.textContent = leitura
+      ? `Atualizado em ${formatarDataHora(leitura.created_at)}`
+      : 'Sem dados disponíveis';
+  }
+
+  /* ── Card Qualidade dos Dados ─────────────────────── */
+  const elQualDesc = document.getElementById('qualidadeDadosDesc');
+  const elQualMeta = document.getElementById('qualidadeDadosMeta');
+  if (leitura && elQualDesc && elQualMeta) {
+    const totalCampos = ['umidade_percentual', 'ph', 'nitrogenio', 'fosforo']
+      .filter(k => leitura[k] !== null && leitura[k] !== undefined).length;
+    const pct = Math.round((totalCampos / 4) * 100);
+    elQualDesc.textContent = `${totalCampos} de 4 parâmetros presentes na última leitura dos sensores. Integridade dos dados: ${pct}%.`;
+    elQualMeta.textContent = `${pct}% dos campos preenchidos`;
+  } else if (elQualDesc) {
+    elQualDesc.textContent = 'Nenhuma leitura encontrada no banco de dados.';
+    if (elQualMeta) elQualMeta.textContent = 'Sem dados';
+  }
+}
+
 
 document.addEventListener('DOMContentLoaded', () => {
     carregarLeituras();
+
+    // Executa atualização dinâmica apenas na página ia.html
+    if (document.getElementById('heroSaudeSolo')) {
+      atualizarPaginaIA();
+    }
 });
+
   /* ── Detect current page ─────────────────────────────────── */
   const currentFile = window.location.pathname.split('/').pop() || 'index.html';
 
@@ -98,7 +388,6 @@ document.addEventListener('DOMContentLoaded', () => {
   navLinks.forEach(link => {
     const href = link.getAttribute('href') || '';
 
-    // Set active based on current URL
     if (href === currentFile) {
       navLinks.forEach(l => l.classList.remove('active'));
       link.classList.add('active');
@@ -144,17 +433,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       };
 
-      // AI Insights page — bento cards
       applyFilter('.bento-grid .card');
-
-      // Dashboard page — stat/map/trend cards
       applyFilter('.stat-card-box, .trends-card, .field-map-card');
-
-      // Monitoring page — table rows and metric cards
       applyFilter('.mon-table tbody tr');
       applyFilter('.mon-chart-card, .mon-metric-card');
-
-      // Alerts page — alert cards, resolved items, sector items
       applyFilter('.alr-card');
       applyFilter('.alr-resolved-item');
       applyFilter('.alr-sector-item');
@@ -163,29 +445,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   /* ──────────────────────────────────────────────────────────
      AI INSIGHTS PAGE  (ia.html) specific behaviors
+     — Removidos: acknowledgeBtn / badge "Resolvido" / ações falsas
      ────────────────────────────────────────────────────────── */
 
-  /* "Acknowledge" button */
-  const acknowledgeBtn = document.querySelector('.card-large .btn-primary');
-  if (acknowledgeBtn) {
-    acknowledgeBtn.addEventListener('click', () => {
-      const card = acknowledgeBtn.closest('.card');
-      acknowledgeBtn.textContent = '✓ Confirmado';
-      acknowledgeBtn.style.background = '#2e7d5a';
-      acknowledgeBtn.disabled = true;
-
-      if (card) {
-        const badge = card.querySelector('.badge-error');
-        if (badge) {
-          badge.textContent = 'Resolvido';
-          badge.classList.remove('badge-error');
-          badge.classList.add('badge-secondary');
-        }
-      }
-    });
-  }
-
-  /* Recommendation arrow buttons */
+  /* Recommendation arrow buttons — apenas navegação */
   const recArrows = document.querySelectorAll('.icon-btn-round');
   recArrows.forEach(btn => {
     btn.addEventListener('click', () => {
@@ -241,7 +504,6 @@ document.addEventListener('DOMContentLoaded', () => {
   if (trendsSelect) {
     trendsSelect.addEventListener('change', (e) => {
       console.log(`[FarmAI] Trends period: "${e.target.value}"`);
-      // Future: fetch data and redraw chart
     });
   }
 
@@ -249,18 +511,15 @@ document.addEventListener('DOMContentLoaded', () => {
      MONITORING PAGE  (monitoring.html) specific behaviors
      ────────────────────────────────────────────────────────── */
 
-  /* Time range filter buttons */
   const filterBtns = document.querySelectorAll('.filter-btn[data-filter]');
   filterBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       filterBtns.forEach(b => b.classList.remove('filter-btn--active'));
       btn.classList.add('filter-btn--active');
       console.log(`[FarmAI] Time filter: "${btn.dataset.filter}"`);
-      // Future: reload chart data for selected range
     });
   });
 
-  /* Compare sensors button */
   const compareSensorsBtn = document.getElementById('compareSensorsBtn');
   if (compareSensorsBtn) {
     compareSensorsBtn.addEventListener('click', () => {
@@ -273,7 +532,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  /* Execute Irrigation Plan button */
   const executeIrrigationPlan = document.getElementById('executeIrrigationPlan');
   if (executeIrrigationPlan) {
     executeIrrigationPlan.addEventListener('click', () => {
@@ -284,16 +542,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  /* Add Sensor (comparison selector) */
   const addSensorBtn = document.querySelector('.mon-compare-add');
   if (addSensorBtn) {
     addSensorBtn.addEventListener('click', () => {
       console.log('[FarmAI] Open sensor picker modal');
-      // Future: open a sensor selection modal
     });
   }
 
-  /* Export CSV */
   const exportBtn = document.querySelector('.mon-export-btn');
   if (exportBtn) {
     exportBtn.addEventListener('click', () => {
@@ -307,7 +562,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  /* FAB chart button (monitoring) */
   const fabChart = document.getElementById('fabChart');
   if (fabChart) {
     fabChart.addEventListener('click', () => {
@@ -321,7 +575,6 @@ document.addEventListener('DOMContentLoaded', () => {
      ALERTS PAGE  (alerts.html) specific behaviors
      ────────────────────────────────────────────────────────── */
 
-  /* Start Irrigation button (critical alert) */
   const startIrrigationBtn = document.getElementById('startIrrigationBtn');
   if (startIrrigationBtn) {
     startIrrigationBtn.addEventListener('click', () => {
@@ -333,7 +586,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  /* Dispatch Technician button */
   const dispatchTechBtn = document.getElementById('dispatchTechBtn');
   if (dispatchTechBtn) {
     dispatchTechBtn.addEventListener('click', () => {
@@ -344,7 +596,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  /* Export Logs button */
   const exportLogsBtn = document.getElementById('exportLogsBtn');
   if (exportLogsBtn) {
     exportLogsBtn.addEventListener('click', () => {
@@ -355,7 +606,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  /* Mute All toggle */
   const muteAllBtn = document.getElementById('muteAllBtn');
   if (muteAllBtn) {
     let muted = false;
@@ -372,7 +622,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  /* Mobile bottom nav active state sync */
   const bottomNavItems = document.querySelectorAll('.bottom-nav-item');
   bottomNavItems.forEach(item => {
     const href = item.getAttribute('href') || '';
@@ -390,7 +639,6 @@ document.addEventListener('DOMContentLoaded', () => {
      DEVICES PAGE  (device.html) specific behaviors
      ────────────────────────────────────────────────────────── */
 
-  /* Device category filter pills */
   const devFilterPills = document.querySelectorAll('.dev-filter-pill');
   const devCards = document.querySelectorAll('.dev-grid .dev-card, .dev-grid .dev-card-add');
 
@@ -414,7 +662,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  /* Device-specific inline search (separate from topbar search) */
   const deviceSearchInput = document.getElementById('deviceSearchInput');
   if (deviceSearchInput) {
     deviceSearchInput.addEventListener('input', (e) => {
@@ -423,8 +670,6 @@ document.addEventListener('DOMContentLoaded', () => {
         card.style.transition = 'opacity 0.25s';
         card.style.opacity = (!query || card.textContent.toLowerCase().includes(query)) ? '1' : '0.25';
       });
-
-      /* Also filter log rows */
       document.querySelectorAll('.dev-log-row').forEach(row => {
         row.style.transition = 'opacity 0.25s';
         row.style.opacity = (!query || row.textContent.toLowerCase().includes(query)) ? '1' : '0.25';
@@ -432,25 +677,20 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  /* Add Device button */
   const addDeviceBtn = document.getElementById('addDeviceBtn');
   if (addDeviceBtn) {
     addDeviceBtn.addEventListener('click', () => {
       console.log('[FarmAI] Open add device modal');
-      // Future: open QR scan / serial entry modal
     });
   }
 
-  /* View full history button */
   const viewFullHistoryBtn = document.getElementById('viewFullHistoryBtn');
   if (viewFullHistoryBtn) {
     viewFullHistoryBtn.addEventListener('click', () => {
       console.log('[FarmAI] Navigate to full connection log');
-      // Future: navigate to logs page or expand inline
     });
   }
 
-  /* Card "more" buttons — per-card context menu stub */
   document.querySelectorAll('.dev-card-more').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -460,7 +700,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  /* Also extend unified topbar search to cover device cards */
   if (searchInput) {
     searchInput.addEventListener('input', () => {
       const query = searchInput.value.toLowerCase().trim();
@@ -485,23 +724,20 @@ document.addEventListener('DOMContentLoaded', () => {
   const triggerInput   = document.getElementById('aiChatTriggerInput');
   const triggerBtn     = document.getElementById('aiChatTriggerBtn');
 
-  /* Only run chat logic if overlay elements exist on the page */
   if (chatOverlay && triggerInput) {
 
-  /* ── Conversation history for the API ───────────────────── */
   const conversationHistory = [];
 
-  /* ── SYSTEM PROMPT ──────────────────────────────────────────
-     Written in English so it works with any English-trained model
-     (e.g. AgriLlama, llama3, mistral, qwen2.5, etc).
-     To test a different model: change only the `model` field
-     inside the JSON.stringify() call below.
-     ─────────────────────────────────────────────────────────── */
   const SYSTEM_PROMPT = `You are an expert agronomist assistant for FarmAI, a precision agriculture platform.
 You help farmers analyze soil sensor data and make practical crop management decisions.
 
 == LANGUAGE ==
 Always respond in Brazilian Portuguese (pt-BR), regardless of the language of these instructions.
+
+== ROLE ==
+You are a decision-support assistant. You analyze data, interpret sensor readings, and recommend actions.
+You do NOT control devices, activate irrigation, apply fertilizers, or execute any physical action.
+Always make clear that recommendations must be validated by a qualified agronomist before implementation.
 
 == SENSOR DATA ==
 Before every user message, you receive real sensor readings injected in the context.
@@ -545,18 +781,13 @@ When asked "if I want to plant X, what would be ideal?":
 - Be direct and concise, like an experienced agronomist speaking to a farmer.
 - Do not contradict yourself across turns.`;
 
-  /* ── Open / Close helpers ────────────────────────────────── */
   function openChat(prefillText = '') {
     chatOverlay.classList.add('ai-chat-overlay--active');
     chatOverlay.setAttribute('aria-hidden', 'false');
-    document.body.style.overflow = 'hidden'; // prevent bg scroll
-
-    // Move any text already typed in the trigger into the chat input
+    document.body.style.overflow = 'hidden';
     if (prefillText.trim()) {
       chatInput.value = prefillText.trim();
     }
-
-    // Focus the chat input after the animation settles
     setTimeout(() => chatInput.focus(), 420);
   }
 
@@ -564,11 +795,9 @@ When asked "if I want to plant X, what would be ideal?":
     chatOverlay.classList.remove('ai-chat-overlay--active');
     chatOverlay.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
-    // Clear trigger input
     triggerInput.value = '';
   }
 
-  /* ── Trigger: click on the input bar or its trigger button ─ */
   triggerInput.addEventListener('focus', () => {
     openChat(triggerInput.value);
   });
@@ -585,22 +814,18 @@ When asked "if I want to plant X, what would be ideal?":
     });
   }
 
-  /* ── Close: back button ──────────────────────────────────── */
   chatBackBtn.addEventListener('click', closeChat);
 
-  /* ── Close: click on the dark backdrop (outside panel) ───── */
   chatOverlay.addEventListener('click', (e) => {
     if (e.target === chatOverlay) closeChat();
   });
 
-  /* ── Close: Escape key ───────────────────────────────────── */
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && chatOverlay.classList.contains('ai-chat-overlay--active')) {
       closeChat();
     }
   });
 
-  /* ── Append a message bubble ─────────────────────────────── */
   function appendMessage(text, role) {
     const msgEl = document.createElement('div');
     msgEl.classList.add('ai-msg', role === 'user' ? 'ai-msg--user' : 'ai-msg--bot');
@@ -618,7 +843,6 @@ When asked "if I want to plant X, what would be ideal?":
 
     const bubbleEl = document.createElement('div');
     bubbleEl.classList.add('ai-msg-bubble');
-    // Preserve line breaks in API response
     bubbleEl.innerHTML = text
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
@@ -635,15 +859,13 @@ When asked "if I want to plant X, what would be ideal?":
 
     chatMessages.appendChild(msgEl);
     scrollToBottom();
-    return bubbleEl; // return for streaming updates
+    return bubbleEl;
   }
 
-  /* ── Smooth scroll to bottom of messages ────────────────── */
   function scrollToBottom() {
     chatMessages.scrollTo({ top: chatMessages.scrollHeight, behavior: 'smooth' });
   }
 
-  /* ── Show / hide typing indicator ───────────────────────── */
   function showTyping() {
     if (chatTyping) {
       chatTyping.style.display = 'flex';
@@ -654,7 +876,6 @@ When asked "if I want to plant X, what would be ideal?":
     if (chatTyping) chatTyping.style.display = 'none';
   }
 
-  /* ── Call Ollama API (local) ─────────────────────────────── */
   async function callOllamaAPI(userMessage) {
 
     const MAX_HISTORY = 6;
@@ -678,7 +899,6 @@ When asked "if I want to plant X, what would be ideal?":
     const diffHoras = diffMs !== null ? Math.floor(diffMs / 1000 / 60 / 60) : null;
     const diffDias  = diffHoras !== null ? Math.floor(diffHoras / 24) : null;
 
-    // Sensor context written in English so any model follows it correctly
     let contextoSolo = '';
     if (semDados) {
       contextoSolo = `[SENSOR DATA]: No sensor readings available.
@@ -702,7 +922,6 @@ Use general agronomic best practices. Make clear the answer is generic due to mi
     const systemContext = SYSTEM_PROMPT + "\n\n" + contextoSolo;
 
     const messages = [
-      // Turn 0: inject full context + prime assistant persona
       {
         role: 'user',
         content: systemContext + "\n\nAcknowledge you have the sensor data and are ready."
@@ -713,9 +932,7 @@ Use general agronomic best practices. Make clear the answer is generic due to mi
           ? "Understood. No sensor data available. I'll answer based on general agronomic best practices."
           : `Understood. I have the sensor readings from ${dataColeta}: moisture ${ultimo?.umidade_percentual}%, pH ${ultimo?.ph}, nitrogen ${ultimo?.nitrogenio}, phosphorus ${ultimo?.fosforo}. Crop: ${cultura}. Ready to analyze.`
       },
-      // Past conversation (user+assistant pairs, saved after each exchange)
       ...conversationHistory,
-      // Current question — added once here, saved to history only after response arrives
       { role: 'user', content: userMessage }
     ];
 
@@ -729,12 +946,11 @@ Use general agronomic best practices. Make clear the answer is generic due to mi
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          // ── To test a different model, change only this line ──
           model: 'llama3.2',
           messages: messages,
           stream: false,
           options: {
-            temperature: 0.4,  // lower = more precise, less hallucination
+            temperature: 0.4,
             top_p: 0.9,
           },
         }),
@@ -751,11 +967,9 @@ Use general agronomic best practices. Make clear the answer is generic due to mi
       hideTyping();
       appendMessage(assistantText, 'assistant');
 
-      // Save both turns to history AFTER response arrives
       conversationHistory.push({ role: 'user',      content: userMessage });
       conversationHistory.push({ role: 'assistant', content: assistantText });
 
-      // Keep history within limit (each exchange = 2 entries)
       while (conversationHistory.length > MAX_HISTORY) {
         conversationHistory.shift();
       }
@@ -774,7 +988,6 @@ Use general agronomic best practices. Make clear the answer is generic due to mi
     }
   }
 
-  /* ── Send message handler ────────────────────────────────── */
   async function handleSend() {
     const text = chatInput.value.trim();
     if (!text) return;
@@ -784,10 +997,8 @@ Use general agronomic best practices. Make clear the answer is generic due to mi
     await callOllamaAPI(text);
   }
 
-  /* ── Send on button click ────────────────────────────────── */
   chatSendBtn.addEventListener('click', handleSend);
 
-  /* ── Send on Enter (Shift+Enter = new line) ──────────────── */
   chatInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -795,8 +1006,4 @@ Use general agronomic best practices. Make clear the answer is generic due to mi
     }
   });
 
-  /* ── If there's prefill text and user presses Enter on overlay open ─ */
-  chatInput.addEventListener('keydown', (e) => {
-    // Already handled above; this redundancy is intentional for clarity.
-  })
-}
+  } // end if (chatOverlay && triggerInput)

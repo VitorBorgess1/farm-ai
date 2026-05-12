@@ -109,11 +109,13 @@
           <div class="hero-stats">
             <div class="stat-card">
               <p class="stat-label">Saúde do Solo</p>
-              <p class="stat-value">94%</p>
+              <!-- Valor e classificação preenchidos dinamicamente via JS -->
+              <p class="stat-value" id="heroSaudeSolo">—</p>
             </div>
             <div class="stat-card">
-              <p class="stat-label">Economia Est.</p>
-              <p class="stat-value">R$ 4.2k</p>
+              <p class="stat-label">Última Leitura</p>
+              <!-- Data/hora da última leitura do banco -->
+              <p class="stat-value" id="heroUltimaLeitura" style="font-size: 1rem; line-height: 1.3;">—</p>
             </div>
           </div>
         </div>
@@ -122,36 +124,33 @@
       <!-- Bento Grid Recommendations -->
       <div class="bento-grid">
 
-        <!-- High Priority: Irrigation (Large Card) -->
-        <div class="card card-large">
+        <!-- High Priority: Umidade (Large Card) — conteúdo dinâmico via JS -->
+        <div class="card card-large" id="cardUmidade">
           <div class="card-header">
-            <div class="icon-box icon-error">
+            <div class="icon-box icon-error" id="umidadeIconBox">
               <span class="material-symbols-outlined">water_drop</span>
             </div>
-            <span class="badge badge-error">Alta Prioridade</span>
+            <span class="badge badge-error" id="umidadeBadge">Carregando...</span>
           </div>
-          <h3 class="card-title">Irrigação recomendada nas próximas 12h</h3>
-          <p class="card-desc">
-            Evaporação alta na Zona A devido a ventos e temperatura de 32°C. Solo com 22% de umidade.
-          </p>
+          <h3 class="card-title" id="umidadeTitulo">Analisando umidade do solo...</h3>
+          <p class="card-desc" id="umidadeDesc">Aguardando dados do sensor.</p>
           <div class="card-actions">
-            <button class="btn-primary">Confirmar</button>
-            <button class="btn-secondary">Ver detalhes</button>
+            <button class="btn-secondary" onclick="window.location.href='monitoring.html'">Ver monitoramento</button>
           </div>
         </div>
 
-        <!-- Medium Priority: Soil pH (Small Card) -->
-        <div class="card card-small">
+        <!-- Medium Priority: pH (Small Card) — conteúdo dinâmico via JS -->
+        <div class="card card-small" id="cardPH">
           <div class="card-header">
-            <div class="icon-box icon-secondary">
+            <div class="icon-box icon-secondary" id="phIconBox">
               <span class="material-symbols-outlined">science</span>
             </div>
-            <span class="badge badge-secondary">Média</span>
+            <span class="badge badge-secondary" id="phBadge">Carregando...</span>
           </div>
-          <h3 class="card-title">Nível de pH ideal detectado</h3>
-          <p class="card-desc">Zona C equilibrada em pH 6,5. Sem correções necessárias.</p>
+          <h3 class="card-title" id="phTitulo">Analisando pH do solo...</h3>
+          <p class="card-desc" id="phDesc">Aguardando dados do sensor.</p>
           <div class="card-footer-btn">
-            <button class="btn-outline">Ver relatório do solo</button>
+            <button class="btn-outline" onclick="window.location.href='monitoring.html'">Ver relatório do solo</button>
           </div>
         </div>
 
@@ -163,38 +162,38 @@
             </div>
             <div>
               <h3 class="card-title">Gestão de Nutrientes</h3>
-              <p class="card-desc-sm">Ações recomendadas para otimização da fertilização</p>
+              <p class="card-desc-sm">Análise de nitrogênio e fósforo com base na última leitura dos sensores</p>
             </div>
           </div>
 
           <div class="recommendation-list">
-            <div class="rec-item">
+            <div class="rec-item" id="recNitrogenio">
               <div class="rec-item-left">
-                <span class="dot dot-tertiary"></span>
+                <span class="dot dot-tertiary" id="dotNitrogenio"></span>
                 <div>
-                  <h4 class="rec-title">Aplicar fertilizante na Zona B</h4>
-                  <p class="rec-desc">Nitrogênio baixo. Ideal aplicar nas próximas 48h antes da chuva.</p>
+                  <h4 class="rec-title" id="recNitrogenioTitulo">Analisando nitrogênio...</h4>
+                  <p class="rec-desc" id="recNitrogenioDesc">Aguardando leitura do sensor.</p>
                 </div>
               </div>
               <div class="rec-item-right">
-                <span class="badge badge-tertiary">Prioridade Média</span>
-                <button class="icon-btn-round">
+                <span class="badge badge-tertiary" id="recNitrogenioBadge">—</span>
+                <button class="icon-btn-round" onclick="window.location.href='monitoring.html'">
                   <span class="material-symbols-outlined">arrow_forward</span>
                 </button>
               </div>
             </div>
 
-            <div class="rec-item">
+            <div class="rec-item" id="recFosforo">
               <div class="rec-item-left">
-                <span class="dot dot-secondary"></span>
+                <span class="dot dot-secondary" id="dotFosforo"></span>
                 <div>
-                  <h4 class="rec-title">Pragas: Baixo risco</h4>
-                  <p class="rec-desc">Sem anomalias térmicas. Manter cronograma.</p>
+                  <h4 class="rec-title" id="recFosforoTitulo">Analisando fósforo...</h4>
+                  <p class="rec-desc" id="recFosforoDesc">Aguardando leitura do sensor.</p>
                 </div>
               </div>
               <div class="rec-item-right">
-                <span class="badge badge-secondary">Prioridade Baixa</span>
-                <button class="icon-btn-round">
+                <span class="badge badge-secondary" id="recFosforoBadge">—</span>
+                <button class="icon-btn-round" onclick="window.location.href='monitoring.html'">
                   <span class="material-symbols-outlined">arrow_forward</span>
                 </button>
               </div>
@@ -209,13 +208,13 @@
             <h4 class="insight-title">Ações da Semana</h4>
           </div>
           <p class="card-desc">
-            Umidade alta prevista para quarta. Monitorar fungos na Zona D.
+            Monitore a umidade diariamente e verifique o pH antes de qualquer aplicação de corretivos.
           </p>
           <div class="insight-footer">
             <span class="meta-text">
-              <span class="material-symbols-outlined">history</span> Gerado há 2h
+              <span class="material-symbols-outlined">history</span> <span id="acoesSemanaAtualizadoEm">—</span>
             </span>
-            <a class="link-primary" href="#">Ver análise</a>
+            <a class="link-primary" href="monitoring.html">Ver análise</a>
           </div>
         </div>
 
@@ -223,14 +222,14 @@
         <div class="card card-half">
           <div class="insight-header">
             <span class="material-symbols-outlined text-primary">speed</span>
-            <h4 class="insight-title">Eficiência</h4>
+            <h4 class="insight-title">Qualidade dos Dados</h4>
           </div>
-          <p class="card-desc">
-            Automação na Zona B economizou 12.000L esta semana.
+          <p class="card-desc" id="qualidadeDadosDesc">
+            Verificando consistência das leituras dos sensores...
           </p>
           <div class="insight-footer">
             <span class="meta-text">
-              <span class="material-symbols-outlined">insights</span> +14% melhoria
+              <span class="material-symbols-outlined">insights</span> <span id="qualidadeDadosMeta">—</span>
             </span>
             <a class="link-primary" href="index.html">Abrir painel</a>
           </div>
