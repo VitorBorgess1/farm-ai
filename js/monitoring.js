@@ -43,7 +43,7 @@ const fmt  = iso => new Date(iso).toLocaleTimeString('pt-BR', { hour: '2-digit',
 const fmtD = iso => new Date(iso).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
 
 // 4095 = sensor no ar / leitura inválida; filtra e usa o valor direto (já em %)
-const soilPct = raw => (raw == null || raw >= 4095) ? null : Number(raw);
+const soilPct = raw => (raw == null || Number(raw) >= 4095) ? null : Number(raw);
 
 // ────────────────────────────────────────────────────────────
 // 4. BUSCA DE DADOS
@@ -172,30 +172,33 @@ function buildMainChart(readings) {
 // 6. MINI GRÁFICO — Temperatura do ar ao longo do tempo (barras)
 // ────────────────────────────────────────────────────────────
 function buildPhMiniChart(readings) {
-  const canvas = document.getElementById('tempChartCanvas');
-  if (!canvas) return;
-
   const withTemp = readings.filter(r => r.temp_ar != null).slice(-8);
-
-  if (state.chartPh) state.chartPh.destroy();
 
   // Atualiza valor numérico no card
   const latestTemp = withTemp.at(-1)?.temp_ar;
   const firstVal = document.querySelector('.mon-metric-value');
-  if (firstVal) firstVal.textContent = latestTemp != null ? latestTemp.toFixed(1) : '--';
+  if (firstVal) firstVal.textContent = latestTemp != null ? Number(latestTemp).toFixed(1) : '--';
 
   if (!withTemp.length) return;
+
+  // Destrói chart anterior e recria o canvas para evitar que o Chart.js
+  // remova o elemento do DOM ao fazer destroy()
+  if (state.chartPh) { state.chartPh.destroy(); state.chartPh = null; }
+  const wrap = document.getElementById('tempChartWrap');
+  if (!wrap) return;
+  wrap.innerHTML = '<canvas id="tempChartCanvas"></canvas>';
+  const canvas = document.getElementById('tempChartCanvas');
 
   state.chartPh = new Chart(canvas, {
     type: 'bar',
     data: {
       labels: withTemp.map(r => fmt(r.created_at)),
       datasets: [{
-        data: withTemp.map(r => r.temp_ar),
+        data: withTemp.map(r => Number(r.temp_ar)),
         backgroundColor: withTemp.map(r =>
-          r.temp_ar > 35 ? 'rgba(248,113,113,0.75)' :
-          r.temp_ar < 10 ? 'rgba(96,165,250,0.75)'  :
-                           'rgba(74,222,128,0.70)'
+          Number(r.temp_ar) > 35 ? 'rgba(248,113,113,0.75)' :
+          Number(r.temp_ar) < 10 ? 'rgba(96,165,250,0.75)'  :
+                                   'rgba(74,222,128,0.70)'
         ),
         borderRadius: 4,
         borderSkipped: false,
@@ -224,7 +227,7 @@ function updatePhCard(readings) {
   const latest = readings.filter(r => r.temp_ar != null).at(-1);
   if (!latest) return;
 
-  const temp    = latest.temp_ar;
+  const temp    = Number(latest.temp_ar);
   const allVals = document.querySelectorAll('.mon-metric-value');
   if (allVals[1]) allVals[1].textContent = temp.toFixed(1);
 
@@ -259,6 +262,7 @@ function renderTable(readings) {
 
   tbody.innerHTML = rows.map(r => {
     const status      = getStatus(r);
+    const pct         = soilPct(r.umid_solo);
     const sensorLabel = r.sensor_id != null
       ? `<span class="sensor-badge">${r.sensor_id}</span>`
       : '<span style="color:#475569">—</span>';
@@ -267,8 +271,8 @@ function renderTable(readings) {
       <tr>
         <td>${fmtD(r.created_at)}</td>
         <td>${sensorLabel}</td>
-        <td>${r.umid_solo != null ? soilPct(r.umid_solo).toFixed(1) + '%' : '—'}</td>
-        <td>${r.temp_ar != null ? r.temp_ar.toFixed(1) + '°C' : '—'}</td>
+        <td>${pct != null ? pct.toFixed(1) + '%' : '—'}</td>
+        <td>${r.temp_ar != null ? Number(r.temp_ar).toFixed(1) + '°C' : '—'}</td>
         <td><span class="status-chip status-chip--${status.cls}">${status.label}</span></td>
       </tr>`;
   }).join('');
@@ -276,10 +280,10 @@ function renderTable(readings) {
 
 function getStatus(r) {
   const u    = soilPct(r.umid_solo);
-  const temp = r.temp_ar;
-  if (u    != null && u    < 20)           return { cls: 'danger', label: 'Crítico'    };
-  if (u    != null && u    < 35)           return { cls: 'warn',   label: 'Alerta'     };
-  if (temp != null && (temp > 35 || temp < 10)) return { cls: 'warn', label: 'Temp. Fora' };
+  const temp = r.temp_ar != null ? Number(r.temp_ar) : null;
+  if (u    != null && u    < 20)                return { cls: 'danger', label: 'Crítico'    };
+  if (u    != null && u    < 35)                return { cls: 'warn',   label: 'Alerta'     };
+  if (temp != null && (temp > 35 || temp < 10)) return { cls: 'warn',   label: 'Temp. Fora' };
   return { cls: 'ok', label: 'Normal' };
 }
 
@@ -291,14 +295,15 @@ function getStatus(r) {
 function exportCSV() {
   const headers = ['Horário', 'Sensor ID', 'Umidade Solo (%)', 'Temp. Ar (°C)', 'Umidade Ar (%)', 'Luz Ambiente', 'Status'];
   const rows = state.readings.map(r => {
-    const s = getStatus(r);
+    const s   = getStatus(r);
+    const pct = soilPct(r.umid_solo);
     return [
       fmtD(r.created_at),
       r.sensor_id ?? '',
-      r.umid_solo != null ? soilPct(r.umid_solo).toFixed(1) : '',
-      r.temp_ar?.toFixed(1)       ?? '',
-      r.umid_ar?.toFixed(1)       ?? '',
-      r.luz_ambiente?.toFixed(0)  ?? '',
+      pct != null ? pct.toFixed(1) : '',
+      r.temp_ar != null ? Number(r.temp_ar).toFixed(1) : '',
+      r.umid_ar != null ? Number(r.umid_ar).toFixed(1) : '',
+      r.luz_ambiente != null ? Number(r.luz_ambiente).toFixed(0) : '',
       s.label,
     ].join(',');
   });
@@ -317,7 +322,7 @@ function exportCSV() {
 // 11. REALTIME
 // ────────────────────────────────────────────────────────────
 function subscribeRealtime() {
-  if (state.realtimeChannel) supabase.removeChannel(state.realtimeChannel);
+  if (state.realtimeChannel) supabaseClientMonitoring.removeChannel(state.realtimeChannel);
 
   state.realtimeChannel = supabaseClientMonitoring
     .channel('leituras-solo-rt')
@@ -358,12 +363,20 @@ function showRealtimePulse() {
 // ────────────────────────────────────────────────────────────
 async function refreshData() {
   showLoading(true);
-  await fetchReadings();
-  buildMainChart(state.readings);
-  buildPhMiniChart(state.readings);
-  updatePhCard(state.readings);
-  renderTable(state.readings);
-  showLoading(false);
+  try {
+    const timeout = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('timeout')), 10000)
+    );
+    await Promise.race([fetchReadings(), timeout]);
+  } catch (err) {
+    console.warn('[refreshData] erro ou timeout:', err.message);
+  } finally {
+    buildMainChart(state.readings);
+    buildPhMiniChart(state.readings);
+    updatePhCard(state.readings);
+    renderTable(state.readings);
+    showLoading(false);
+  }
 }
 
 function showLoading(on) {
@@ -377,23 +390,23 @@ function showLoading(on) {
 // 13. INJEÇÃO DE DOM
 // ────────────────────────────────────────────────────────────
 function injectCanvases() {
-  // Gráfico principal (substitui SVG/conteúdo estático)
   const chartBody = document.querySelector('.mon-chart-body');
   if (chartBody) {
-    chartBody.innerHTML = `<canvas id="mainChartCanvas" style="width:100%;height:100%;display:block;"></canvas>`;
+    chartBody.style.cssText = 'position:relative;height:220px;width:100%;';
+    chartBody.innerHTML = `<canvas id="mainChartCanvas" style="position:absolute;inset:0;width:100%!important;height:100%!important;"></canvas>`;
   }
 
-  // Mini gráfico pH (substitui barras estáticas do card Temperatura)
-  const miniBars = document.querySelector('.mon-mini-bars');
-  if (miniBars) {
-    const wrap = document.createElement('div');
-    wrap.style.cssText = 'height:48px;margin-top:8px;';
-    wrap.innerHTML = '<canvas id="tempChartCanvas"></canvas>';
-    miniBars.replaceWith(wrap);
+  // Injeta wrapper do mini gráfico apenas uma vez
+  if (!document.getElementById('tempChartCanvas')) {
+    const miniBars = document.querySelector('.mon-mini-bars');
+    if (miniBars) {
+      const wrap = document.createElement('div');
+      wrap.id = 'tempChartWrap';
+      wrap.style.cssText = 'height:48px;margin-top:8px;';
+      wrap.innerHTML = '<canvas id="tempChartCanvas"></canvas>';
+      miniBars.replaceWith(wrap);
+    }
   }
-
-  // A unidade do card de temperatura já está correta no HTML
-  // Não é necessário renomear via JS
 
   // Badge "Ao Vivo"
   const topbarRight = document.querySelector('.topbar-right');
@@ -450,10 +463,6 @@ function injectStyles() {
       box-shadow:0 0 10px rgba(74,222,128,0.25);
     }
 
-    .sensor-toggle { cursor:pointer; transition:background .15s; border-radius:8px; }
-    .sensor-toggle:hover { background:rgba(255,255,255,0.05); }
-    .sensor-toggle.active .mon-compare-check { color:#4ade80; }
-
     .sensor-badge {
       font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;
       background:rgba(96,165,250,0.12);color:#60a5fa;font-family:monospace;
@@ -472,7 +481,6 @@ function injectStyles() {
     @keyframes rowIn { from{opacity:0;transform:translateY(-3px)} to{opacity:1;transform:none} }
     .mon-table tbody tr { animation:rowIn .18s ease both; }
 
-    /* Date picker panel */
     .custom-picker-panel {
       background: var(--color-surface, #fff);
       border: 1px solid rgba(0,0,0,0.08);
@@ -529,7 +537,6 @@ function injectStyles() {
     }
     .custom-picker-apply:hover { opacity: 0.85; }
 
-    /* Sensor info card */
     .mon-sensor-info { padding: 4px 0; }
     .mon-sensor-row {
       display: flex;

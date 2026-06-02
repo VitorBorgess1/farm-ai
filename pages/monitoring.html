@@ -105,29 +105,31 @@
           <p class="mon-hero-desc">Acompanhe a evolução biológica do seu solo em tempo real com precisão analítica e insights baseados em IA.</p>
         </div>
 
-        <!-- Filter / Time Range Bar -->
-        <div class="filter-bar">
-          <button class="filter-btn filter-btn--active" data-filter="24h">Últimas 24h</button>
-          <button class="filter-btn" data-filter="7d">7 Dias</button>
-          <button class="filter-btn" data-filter="custom">
-            <span class="material-symbols-outlined" style="font-size:15px;vertical-align:-3px;margin-right:4px;">calendar_month</span>Personalizado
-          </button>
-        </div>
+        <!-- Filter / Time Range Bar + Date Picker -->
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:10px;">
+          <div class="filter-bar">
+            <button class="filter-btn filter-btn--active" data-filter="24h">Últimas 24h</button>
+            <button class="filter-btn" data-filter="7d">7 Dias</button>
+            <button class="filter-btn" data-filter="custom">
+              <span class="material-symbols-outlined" style="font-size:15px;vertical-align:-3px;margin-right:4px;">calendar_month</span>Personalizado
+            </button>
+          </div>
 
-        <!-- Date picker — aparece abaixo da filter-bar quando "Personalizado" é clicado -->
-        <div id="customDatePicker" style="display:none;margin-top:10px;">
-          <div class="custom-picker-panel">
-            <div class="custom-picker-row">
-              <div class="custom-picker-field">
-                <label class="custom-picker-label">De</label>
-                <input id="customStart" type="date" class="custom-picker-input">
+          <!-- Date picker — aparece abaixo da filter-bar quando "Personalizado" é clicado -->
+          <div id="customDatePicker" style="display:none;">
+            <div class="custom-picker-panel">
+              <div class="custom-picker-row">
+                <div class="custom-picker-field">
+                  <label class="custom-picker-label">De</label>
+                  <input id="customStart" type="date" class="custom-picker-input">
+                </div>
+                <span class="custom-picker-sep">→</span>
+                <div class="custom-picker-field">
+                  <label class="custom-picker-label">Até</label>
+                  <input id="customEnd" type="date" class="custom-picker-input">
+                </div>
+                <button id="applyCustomFilter" class="custom-picker-apply">Aplicar</button>
               </div>
-              <span class="custom-picker-sep">→</span>
-              <div class="custom-picker-field">
-                <label class="custom-picker-label">Até</label>
-                <input id="customEnd" type="date" class="custom-picker-input">
-              </div>
-              <button id="applyCustomFilter" class="custom-picker-apply">Aplicar</button>
             </div>
           </div>
         </div>
