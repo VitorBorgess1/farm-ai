@@ -108,9 +108,9 @@
           </div>
           <div class="hero-stats">
             <div class="stat-card">
-              <p class="stat-label">Saúde do Solo</p>
-              <!-- Valor e classificação preenchidos dinamicamente via JS -->
-              <p class="stat-value" id="heroSaudeSolo">—</p>
+              <p class="stat-label">Condição Geral</p>
+              <!-- Condição geral calculada dinamicamente com base nos 4 sensores reais -->
+              <p class="stat-value" id="heroCondicaoGeral">—</p>
             </div>
             <div class="stat-card">
               <p class="stat-label">Última Leitura</p>
@@ -124,91 +124,95 @@
       <!-- Bento Grid Recommendations -->
       <div class="bento-grid">
 
-        <!-- High Priority: Umidade (Large Card) — conteúdo dinâmico via JS -->
-        <div class="card card-large" id="cardUmidade">
+        <!-- Alta Prioridade: Umidade do Solo (Card Grande) — conteúdo dinâmico via JS -->
+        <div class="card card-large" id="cardUmidadeSolo">
           <div class="card-header">
-            <div class="icon-box icon-error" id="umidadeIconBox">
+            <div class="icon-box icon-error" id="umidSoloIconBox">
               <span class="material-symbols-outlined">water_drop</span>
             </div>
-            <span class="badge badge-error" id="umidadeBadge">Carregando...</span>
+            <span class="badge badge-error" id="umidSoloBadge">Carregando...</span>
           </div>
-          <h3 class="card-title" id="umidadeTitulo">Analisando umidade do solo...</h3>
-          <p class="card-desc" id="umidadeDesc">Aguardando dados do sensor.</p>
+          <h3 class="card-title" id="umidSoloTitulo">Analisando umidade do solo...</h3>
+          <p class="card-desc" id="umidSoloDesc">Aguardando dados do sensor.</p>
           <div class="card-actions">
             <button class="btn-secondary" onclick="window.location.href='monitoring.html'">Ver monitoramento</button>
           </div>
         </div>
 
-        <!-- Medium Priority: pH (Small Card) — conteúdo dinâmico via JS -->
-        <div class="card card-small" id="cardPH">
+        <!-- Temperatura do Ar (Card Pequeno) — conteúdo dinâmico via JS -->
+        <div class="card card-small" id="cardTempAr">
           <div class="card-header">
-            <div class="icon-box icon-secondary" id="phIconBox">
-              <span class="material-symbols-outlined">science</span>
+            <div class="icon-box icon-secondary" id="tempArIconBox">
+              <span class="material-symbols-outlined">thermostat</span>
             </div>
-            <span class="badge badge-secondary" id="phBadge">Carregando...</span>
+            <span class="badge badge-secondary" id="tempArBadge">Carregando...</span>
           </div>
-          <h3 class="card-title" id="phTitulo">Analisando pH do solo...</h3>
-          <p class="card-desc" id="phDesc">Aguardando dados do sensor.</p>
+          <h3 class="card-title" id="tempArTitulo">Analisando temperatura do ar...</h3>
+          <p class="card-desc" id="tempArDesc">Aguardando dados do sensor.</p>
           <div class="card-footer-btn">
-            <button class="btn-outline" onclick="window.location.href='monitoring.html'">Ver relatório do solo</button>
+            <button class="btn-outline" onclick="window.location.href='monitoring.html'">Ver relatório</button>
           </div>
         </div>
 
-        <!-- Nutrient Management (Full Width) -->
+        <!-- Condições Ambientais: Umidade do Ar + Luz (Card Largura Total) -->
         <div class="card card-full">
           <div class="card-section-header">
             <div class="icon-box icon-tertiary">
-              <span class="material-symbols-outlined">grass</span>
+              <span class="material-symbols-outlined">wb_sunny</span>
             </div>
             <div>
-              <h3 class="card-title">Gestão de Nutrientes</h3>
-              <p class="card-desc-sm">Análise de nitrogênio e fósforo com base na última leitura dos sensores</p>
+              <h3 class="card-title">Condições Ambientais</h3>
+              <p class="card-desc-sm">Análise de umidade do ar e luminosidade com base na última leitura dos sensores</p>
             </div>
           </div>
 
           <div class="recommendation-list">
-            <div class="rec-item" id="recNitrogenio">
+
+            <!-- Umidade do Ar -->
+            <div class="rec-item" id="recUmidAr">
               <div class="rec-item-left">
-                <span class="dot dot-tertiary" id="dotNitrogenio"></span>
+                <span class="dot dot-tertiary" id="dotUmidAr"></span>
                 <div>
-                  <h4 class="rec-title" id="recNitrogenioTitulo">Analisando nitrogênio...</h4>
-                  <p class="rec-desc" id="recNitrogenioDesc">Aguardando leitura do sensor.</p>
+                  <h4 class="rec-title" id="recUmidArTitulo">Analisando umidade do ar...</h4>
+                  <p class="rec-desc" id="recUmidArDesc">Aguardando leitura do sensor.</p>
                 </div>
               </div>
               <div class="rec-item-right">
-                <span class="badge badge-tertiary" id="recNitrogenioBadge">—</span>
+                <span class="badge badge-tertiary" id="recUmidArBadge">—</span>
                 <button class="icon-btn-round" onclick="window.location.href='monitoring.html'">
                   <span class="material-symbols-outlined">arrow_forward</span>
                 </button>
               </div>
             </div>
 
-            <div class="rec-item" id="recFosforo">
+            <!-- Luz Ambiente -->
+            <div class="rec-item" id="recLuzAmbiente">
               <div class="rec-item-left">
-                <span class="dot dot-secondary" id="dotFosforo"></span>
+                <span class="dot dot-secondary" id="dotLuzAmbiente"></span>
                 <div>
-                  <h4 class="rec-title" id="recFosforoTitulo">Analisando fósforo...</h4>
-                  <p class="rec-desc" id="recFosforoDesc">Aguardando leitura do sensor.</p>
+                  <h4 class="rec-title" id="recLuzAmbienteTitulo">Analisando luminosidade...</h4>
+                  <p class="rec-desc" id="recLuzAmbienteDesc">Aguardando leitura do sensor.</p>
                 </div>
               </div>
               <div class="rec-item-right">
-                <span class="badge badge-secondary" id="recFosforoBadge">—</span>
+                <span class="badge badge-secondary" id="recLuzAmbienteBadge">—</span>
                 <button class="icon-btn-round" onclick="window.location.href='monitoring.html'">
                   <span class="material-symbols-outlined">arrow_forward</span>
                 </button>
               </div>
             </div>
+
           </div>
         </div>
 
-        <!-- Extra Insights: Weekly Forecast -->
+        <!-- Ações da Semana -->
         <div class="card card-half">
           <div class="insight-header">
             <span class="material-symbols-outlined text-primary">calendar_today</span>
             <h4 class="insight-title">Ações da Semana</h4>
           </div>
           <p class="card-desc">
-            Monitore a umidade diariamente e verifique o pH antes de qualquer aplicação de corretivos.
+            Monitore a umidade do solo diariamente e verifique a temperatura do ar antes de irrigar para evitar estresse hídrico nas plantas.
           </p>
           <div class="insight-footer">
             <span class="meta-text">
@@ -218,7 +222,7 @@
           </div>
         </div>
 
-        <!-- Extra Insights: Efficiency Metric -->
+        <!-- Qualidade dos Dados -->
         <div class="card card-half">
           <div class="insight-header">
             <span class="material-symbols-outlined text-primary">speed</span>
@@ -237,7 +241,7 @@
 
       </div><!-- /bento-grid -->
 
-      <!-- ── AI Chat Trigger (bottom of page) ── -->
+      <!-- Gatilho do Chat IA (parte inferior da página) -->
       <div class="ai-chat-trigger-section">
         <div class="ai-chat-trigger-label">
           <span class="material-symbols-outlined">psychology</span>
@@ -261,18 +265,18 @@
     </div><!-- /content-canvas -->
   </main>
 
-  <!-- FAB for Mobile -->
+  <!-- FAB para Mobile -->
   <button class="fab" id="fab">
     <span class="material-symbols-outlined">bolt</span>
   </button>
 
   <!-- ══════════════════════════════════════════════
-       AI CHAT OVERLAY
+       OVERLAY DO CHAT IA
        ══════════════════════════════════════════════ -->
   <div class="ai-chat-overlay" id="aiChatOverlay" aria-hidden="true">
     <div class="ai-chat-panel" id="aiChatPanel">
 
-      <!-- Chat Header -->
+      <!-- Cabeçalho do Chat -->
       <header class="ai-chat-header">
         <button class="ai-chat-back-btn" id="aiChatBackBtn" aria-label="Fechar chat">
           <span class="material-symbols-outlined">arrow_back</span>
@@ -292,20 +296,20 @@
         </div>
       </header>
 
-      <!-- Messages Area -->
+      <!-- Área de Mensagens -->
       <div class="ai-chat-messages" id="aiChatMessages">
-        <!-- Welcome message -->
+        <!-- Mensagem de boas-vindas -->
         <div class="ai-msg ai-msg--bot">
           <div class="ai-msg-avatar">
             <span class="material-symbols-outlined filled">eco</span>
           </div>
           <div class="ai-msg-bubble">
-            <p>Olá! Sou o assistente IA da FarmAI. Posso te ajudar com dúvidas sobre irrigação, solo, nutrientes, clima e muito mais. Como posso ajudar hoje?</p>
+            <p>Olá! Sou o assistente IA da FarmAI. Posso te ajudar com dúvidas sobre irrigação, temperatura, umidade do solo, luminosidade e muito mais. Como posso ajudar hoje?</p>
           </div>
         </div>
       </div>
 
-      <!-- Typing indicator (hidden by default) -->
+      <!-- Indicador de digitação (oculto por padrão) -->
       <div class="ai-chat-typing" id="aiChatTyping" style="display:none;">
         <div class="ai-msg-avatar ai-msg-avatar--sm">
           <span class="material-symbols-outlined filled">eco</span>
@@ -315,7 +319,7 @@
         </div>
       </div>
 
-      <!-- Chat Input -->
+      <!-- Campo de Entrada do Chat -->
       <div class="ai-chat-input-area">
         <div class="ai-chat-input-bar">
           <input
