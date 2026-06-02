@@ -1,8 +1,8 @@
 // ============================================================
 // FarmAI — Monitoring Page Script
 // Tabela: leituras_solo
-// Colunas: id, created_at, sensor_id, ph, umidade_percentual,
-//          nitrogenio, fosforo
+// Colunas: id, created_at, sensor_id, temp_ar, umid_ar,
+//          umid_solo, luz_ambiente
 // ============================================================
 
 // ────────────────────────────────────────────────────────────
@@ -65,7 +65,7 @@ async function fetchReadings() {
 
   let query = supabaseClientMonitoring
     .from('leituras_solo')
-    .select('id, created_at, sensor_id, ph, umidade_percentual, nitrogenio, fosforo')
+    .select('id, created_at, sensor_id, temp_ar, umid_ar, umid_solo, luz_ambiente')
     .gte('created_at', startDate)
     .order('created_at', { ascending: true })
     .limit(500);
@@ -114,7 +114,7 @@ function buildMainChart(readings) {
 
   const datasets = sensorIds.map((sid, i) => {
     const sr  = readings.filter(r => (r.sensor_id ?? 'Sem ID') === sid);
-    const map = Object.fromEntries(sr.map(r => [r.created_at, r.umidade_percentual]));
+    const map = Object.fromEntries(sr.map(r => [r.created_at, r.umid_solo]));
     const c   = palette[i % palette.length];
     return {
       label: `Sensor ${sid}`,
@@ -171,43 +171,42 @@ function buildMainChart(readings) {
   });
 
   // KPI — média das últimas 20 leituras
-  const recentes = readings.slice(-20).filter(r => r.umidade_percentual != null);
+  const recentes = readings.slice(-20).filter(r => r.umid_solo != null);
   if (recentes.length) {
-    const avg = recentes.reduce((s, r) => s + r.umidade_percentual, 0) / recentes.length;
+    const avg = recentes.reduce((s, r) => s + r.umid_solo, 0) / recentes.length;
     const el  = document.querySelector('.mon-chart-kpi-value');
     if (el) el.textContent = avg.toFixed(1) + '%';
   }
 }
 
 // ────────────────────────────────────────────────────────────
-// 6. MINI GRÁFICO — pH ao longo do tempo (barras)
-//    Exibe no card que era "Temperatura" (sem essa coluna no banco)
+// 6. MINI GRÁFICO — Temperatura do ar ao longo do tempo (barras)
 // ────────────────────────────────────────────────────────────
 function buildPhMiniChart(readings) {
   const canvas = document.getElementById('tempChartCanvas');
   if (!canvas) return;
 
-  const withPh = readings.filter(r => r.ph != null).slice(-8);
+  const withTemp = readings.filter(r => r.temp_ar != null).slice(-8);
 
   if (state.chartPh) state.chartPh.destroy();
 
   // Atualiza valor numérico no card
-  const latestPh = withPh.at(-1)?.ph;
+  const latestTemp = withTemp.at(-1)?.temp_ar;
   const firstVal = document.querySelector('.mon-metric-value');
-  if (firstVal) firstVal.textContent = latestPh != null ? latestPh.toFixed(1) : '--';
+  if (firstVal) firstVal.textContent = latestTemp != null ? latestTemp.toFixed(1) : '--';
 
-  if (!withPh.length) return;
+  if (!withTemp.length) return;
 
   state.chartPh = new Chart(canvas, {
     type: 'bar',
     data: {
-      labels: withPh.map(r => fmt(r.created_at)),
+      labels: withTemp.map(r => fmt(r.created_at)),
       datasets: [{
-        data: withPh.map(r => r.ph),
-        backgroundColor: withPh.map(r =>
-          r.ph < 5.5 ? 'rgba(248,113,113,0.75)' :
-          r.ph > 7.5 ? 'rgba(250,204,21,0.75)'  :
-                       'rgba(74,222,128,0.70)'
+        data: withTemp.map(r => r.temp_ar),
+        backgroundColor: withTemp.map(r =>
+          r.temp_ar > 35 ? 'rgba(248,113,113,0.75)' :
+          r.temp_ar < 10 ? 'rgba(96,165,250,0.75)'  :
+                           'rgba(74,222,128,0.70)'
         ),
         borderRadius: 4,
         borderSkipped: false,
@@ -221,42 +220,42 @@ function buildPhMiniChart(readings) {
         tooltip: {
           backgroundColor: '#0f172a',
           bodyColor: '#94a3b8',
-          callbacks: { label: ctx => ` pH: ${ctx.parsed.y.toFixed(2)}` },
+          callbacks: { label: ctx => ` Temp: ${ctx.parsed.y.toFixed(1)}°C` },
         },
       },
-      scales: { x: { display: false }, y: { display: false, min: 4, max: 9 } },
+      scales: { x: { display: false }, y: { display: false, min: 0, max: 50 } },
     },
   });
 }
 
 // ────────────────────────────────────────────────────────────
-// 7. CARD pH (dark)
+// 7. CARD Temperatura (dark)
 // ────────────────────────────────────────────────────────────
 function updatePhCard(readings) {
-  const latest = readings.filter(r => r.ph != null).at(-1);
+  const latest = readings.filter(r => r.temp_ar != null).at(-1);
   if (!latest) return;
 
-  const ph      = latest.ph;
+  const temp    = latest.temp_ar;
   const allVals = document.querySelectorAll('.mon-metric-value');
-  if (allVals[1]) allVals[1].textContent = ph.toFixed(1);
+  if (allVals[1]) allVals[1].textContent = temp.toFixed(1);
 
   const badgeText = document.querySelector('.mon-metric-badge-healthy span:last-child');
   if (badgeText) {
     badgeText.textContent =
-      ph < 5.5 ? 'Ácido' :
-      ph > 7.5 ? 'Alcalino' : 'Saudável';
+      temp > 35 ? 'Muito Quente' :
+      temp < 10 ? 'Muito Frio'   : 'Normal';
   }
 
   const dot = document.querySelector('.mon-metric-badge-dot');
   if (dot) {
     dot.style.background =
-      ph < 5.5 ? '#f87171' :
-      ph > 7.5 ? '#facc15' : '#4ade80';
+      temp > 35 ? '#f87171' :
+      temp < 10 ? '#60a5fa' : '#4ade80';
   }
 }
 
 // ────────────────────────────────────────────────────────────
-// 8. TABELA — inclui colunas nitrogenio e fosforo
+// 8. TABELA — colunas: umid_solo, temp_ar, umid_ar, luz_ambiente
 // ────────────────────────────────────────────────────────────
 function renderTable(readings) {
   const tbody = document.getElementById('corpoTabelaLeituras');
@@ -265,7 +264,7 @@ function renderTable(readings) {
   const rows = [...readings].reverse().slice(0, 50);
 
   if (!rows.length) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#64748b;padding:24px;">Nenhuma leitura encontrada no período</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#64748b;padding:24px;">Nenhuma leitura encontrada no período</td></tr>`;
     return;
   }
 
@@ -279,19 +278,19 @@ function renderTable(readings) {
       <tr>
         <td>${fmtD(r.created_at)}</td>
         <td>${sensorLabel}</td>
-        <td>${r.umidade_percentual != null ? r.umidade_percentual.toFixed(1) + '%' : '—'}</td>
-        <td>${r.ph != null ? r.ph.toFixed(2) : '—'}</td>
+        <td>${r.umid_solo != null ? r.umid_solo.toFixed(1) + '%' : '—'}</td>
+        <td>${r.temp_ar != null ? r.temp_ar.toFixed(1) + '°C' : '—'}</td>
         <td><span class="status-chip status-chip--${status.cls}">${status.label}</span></td>
       </tr>`;
   }).join('');
 }
 
 function getStatus(r) {
-  const u  = r.umidade_percentual;
-  const ph = r.ph;
-  if (u  != null && u  < 20)           return { cls: 'danger', label: 'Crítico' };
-  if (u  != null && u  < 35)           return { cls: 'warn',   label: 'Alerta'  };
-  if (ph != null && (ph < 5.5 || ph > 7.5)) return { cls: 'warn', label: 'pH Fora' };
+  const u    = r.umid_solo;
+  const temp = r.temp_ar;
+  if (u    != null && u    < 20)           return { cls: 'danger', label: 'Crítico'    };
+  if (u    != null && u    < 35)           return { cls: 'warn',   label: 'Alerta'     };
+  if (temp != null && (temp > 35 || temp < 10)) return { cls: 'warn', label: 'Temp. Fora' };
   return { cls: 'ok', label: 'Normal' };
 }
 
@@ -342,16 +341,16 @@ function renderSensorSelector() {
 // 10. EXPORT CSV
 // ────────────────────────────────────────────────────────────
 function exportCSV() {
-  const headers = ['Horário', 'Sensor ID', 'Umidade (%)', 'pH', 'Nitrogênio', 'Fósforo', 'Status'];
+  const headers = ['Horário', 'Sensor ID', 'Umidade Solo (%)', 'Temp. Ar (°C)', 'Umidade Ar (%)', 'Luz Ambiente', 'Status'];
   const rows = state.readings.map(r => {
     const s = getStatus(r);
     return [
       fmtD(r.created_at),
       r.sensor_id ?? '',
-      r.umidade_percentual?.toFixed(1) ?? '',
-      r.ph?.toFixed(2) ?? '',
-      r.nitrogenio?.toFixed(1) ?? '',
-      r.fosforo?.toFixed(1) ?? '',
+      r.umid_solo?.toFixed(1)     ?? '',
+      r.temp_ar?.toFixed(1)       ?? '',
+      r.umid_ar?.toFixed(1)       ?? '',
+      r.luz_ambiente?.toFixed(0)  ?? '',
       s.label,
     ].join(',');
   });
@@ -443,13 +442,13 @@ function injectCanvases() {
     miniBars.replaceWith(wrap);
   }
 
-  // Renomeia o card "Temperatura" para "pH (evolução)"
+  // Renomeia o card de métricas para "Temperatura do Ar"
   const labelEls = document.querySelectorAll('.mon-metric-label');
   labelEls.forEach(el => {
     if (el.textContent.trim() === 'Temperatura') {
-      el.textContent = 'pH (evolução)';
+      el.textContent = 'Temperatura do Ar';
       const unit = el.closest('.mon-metric-card')?.querySelector('.mon-metric-unit');
-      if (unit) unit.textContent = '';
+      if (unit) unit.textContent = '°C';
     }
   });
 
