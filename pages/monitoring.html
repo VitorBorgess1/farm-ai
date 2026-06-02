@@ -77,10 +77,6 @@
         </div>
       </div>
       <div class="topbar-right">
-        <!--
-          O badge "Ao Vivo" é injetado aqui dinamicamente pelo script.
-          Ele aparece assim que a conexão Realtime é estabelecida.
-        -->
         <button class="icon-btn">
           <span class="material-symbols-outlined">notifications</span>
         </button>
@@ -113,16 +109,27 @@
         <div class="filter-bar">
           <button class="filter-btn filter-btn--active" data-filter="24h">Últimas 24h</button>
           <button class="filter-btn" data-filter="7d">7 Dias</button>
-          <button class="filter-btn" data-filter="custom">Personalizado</button>
-          <div class="filter-divider"></div>
-          <button class="filter-btn filter-btn--icon" id="compareSensorsBtn">
-            <span class="material-symbols-outlined">compare_arrows</span>
-            Comparar Sensores
+          <button class="filter-btn" data-filter="custom">
+            <span class="material-symbols-outlined" style="font-size:15px;vertical-align:-3px;margin-right:4px;">calendar_month</span>Personalizado
           </button>
-          <!--
-            O date picker personalizado é injetado aqui pelo script
-            quando o filtro "Personalizado" é selecionado.
-          -->
+        </div>
+
+        <!-- Date picker — aparece abaixo da filter-bar quando "Personalizado" é clicado -->
+        <div id="customDatePicker" style="display:none;margin-top:10px;">
+          <div class="custom-picker-panel">
+            <div class="custom-picker-row">
+              <div class="custom-picker-field">
+                <label class="custom-picker-label">De</label>
+                <input id="customStart" type="date" class="custom-picker-input">
+              </div>
+              <span class="custom-picker-sep">→</span>
+              <div class="custom-picker-field">
+                <label class="custom-picker-label">Até</label>
+                <input id="customEnd" type="date" class="custom-picker-input">
+              </div>
+              <button id="applyCustomFilter" class="custom-picker-apply">Aplicar</button>
+            </div>
+          </div>
         </div>
       </header>
 
@@ -137,26 +144,18 @@
                 <span class="mon-chart-dot"></span>
                 <h3 class="mon-chart-title">Umidade do Solo (%)</h3>
               </div>
-              <p class="mon-chart-sub">Sensor: Alpha-01 vs Beta-04</p>
+              <!-- Subtítulo atualizado pelo JS conforme o filtro ativo -->
+              <p class="mon-chart-sub" id="chartSubLabel">Evolução por hora</p>
             </div>
             <div class="mon-chart-kpi">
               <div class="mon-chart-kpi-text">
                 <p class="mon-chart-kpi-label">Média Atual</p>
-                <!--
-                  Valor atualizado dinamicamente pelo script.
-                  Mostra "--" até os dados chegarem.
-                -->
                 <p class="mon-chart-kpi-value">--</p>
               </div>
               <span class="material-symbols-outlined mon-chart-icon">water_drop</span>
             </div>
           </div>
 
-          <!--
-            .mon-chart-body: O SVG estático original é SUBSTITUÍDO por um
-            <canvas id="mainChartCanvas"> pelo script na inicialização.
-            Deixe o elemento vazio aqui para o script popular.
-          -->
           <div class="mon-chart-body">
             <!-- Chart.js canvas injetado aqui pelo monitoring.js -->
           </div>
@@ -171,9 +170,6 @@
               <div>
                 <h3 class="mon-metric-label">Temperatura</h3>
                 <div class="mon-metric-value-row">
-                  <!--
-                    Valor atualizado pelo script com a última leitura.
-                  -->
                   <span class="mon-metric-value">--</span>
                   <span class="mon-metric-unit">°C</span>
                 </div>
@@ -182,10 +178,6 @@
                 <span class="material-symbols-outlined">thermostat</span>
               </div>
             </div>
-            <!--
-              .mon-mini-bars: Substituído por <canvas id="tempChartCanvas">
-              pelo script para exibir um gráfico de barras real por hora.
-            -->
             <div class="mon-mini-bars">
               <!-- Canvas de temperatura injetado aqui pelo monitoring.js -->
             </div>
@@ -218,10 +210,6 @@
         <div class="mon-table-section">
           <div class="mon-table-header">
             <h2 class="mon-section-title">Leituras Precisas</h2>
-            <!--
-              Botão de exportar: dispara exportCSV() no script.
-              Gera um .csv com todas as leituras carregadas em memória.
-            -->
             <button class="mon-export-btn">
               Exportar CSV
               <span class="material-symbols-outlined">download</span>
@@ -238,19 +226,13 @@
                   <th>Status</th>
                 </tr>
               </thead>
-              <!--
-                #corpoTabelaLeituras: populado dinamicamente pelo script.
-                Exibe as 50 leituras mais recentes.
-                Novas inserções via Realtime são adicionadas automaticamente
-                sem recarregar a página.
-              -->
               <tbody id="corpoTabelaLeituras">
               </tbody>
             </table>
           </div>
         </div>
 
-        <!-- Right Sidebar: AI + Comparison -->
+        <!-- Right Sidebar: AI Insights -->
         <div class="mon-sidebar-col">
           <h2 class="mon-section-title">Insights do Analista</h2>
 
@@ -262,11 +244,6 @@
               <p class="mon-analyst-desc">
                 Detectamos uma tendência de queda na umidade do setor Alpha. Recomendamos acionar o sistema de gotejamento às 18:00 para otimizar a absorção radicular.
               </p>
-              <!--
-                #executeIrrigationPlan: ao clicar, o botão executa
-                uma chamada (ex: Edge Function Supabase ou webhook).
-                Customize a lógica dentro de bindEvents() no script.
-              -->
               <button class="btn-mon-analyst" id="executeIrrigationPlan">
                 Executar Plano Automático
               </button>
@@ -274,24 +251,21 @@
             <div class="mon-analyst-glow"></div>
           </div>
 
-          <!-- Sensor Comparison Selector -->
+          <!-- ESP Info Card (substitui o seletor de comparação) -->
           <div class="mon-compare-card">
             <h4 class="mon-compare-title">
-              <span class="material-symbols-outlined">compare</span>
-              Seletor de Comparação
+              <span class="material-symbols-outlined">sensors</span>
+              Sensor Ativo
             </h4>
-            <!--
-              .mon-compare-list: Os sensores disponíveis são injetados
-              dinamicamente pelo script. Clique em cada sensor para
-              incluí-lo ou removê-lo da comparação no gráfico principal.
-              Os 2 primeiros sensores ficam selecionados por padrão.
-            -->
-            <div class="mon-compare-list">
-              <!-- Sensores injetados aqui pelo monitoring.js -->
-              <button class="mon-compare-add">
-                <span class="material-symbols-outlined">add</span>
-                Adicionar Sensor
-              </button>
+            <div class="mon-sensor-info">
+              <div class="mon-sensor-row">
+                <span class="material-symbols-outlined mon-sensor-icon">router</span>
+                <div>
+                  <p class="mon-sensor-name">ESP32 — Sensor 1</p>
+                  <p class="mon-sensor-desc">Umidade · Temperatura · Luz</p>
+                </div>
+                <span class="status-chip status-chip--ok">Online</span>
+              </div>
             </div>
           </div>
 
@@ -308,15 +282,6 @@
 
   <!-- Supabase SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-  <!--
-    ⚠️  ANTES DE USAR:
-    1. Abra monitoring.js
-    2. Substitua SUPABASE_URL e SUPABASE_ANON_KEY pelas suas credenciais
-    3. Ajuste o nome da tabela (padrão: 'leituras') e colunas se necessário
-    4. Habilite Realtime na tabela pelo painel do Supabase:
-       Table Editor → leituras → Enable Realtime
-  -->
   <script src="../js/monitoring.js"></script>
 </body>
 </html>

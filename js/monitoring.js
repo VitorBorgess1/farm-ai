@@ -18,8 +18,6 @@ const supabaseClientMonitoring = window.supabase.createClient(SUPABASE_URL, SUPA
 // ────────────────────────────────────────────────────────────
 const state = {
   filter: '24h',
-  selectedSensors: [],
-  allSensors: [],
   readings: [],
   chart: null,
   chartPh: null,
@@ -44,25 +42,13 @@ function getStartDate(filter) {
 const fmt  = iso => new Date(iso).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 const fmtD = iso => new Date(iso).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
 
-// Sensor analógico retorna 0–4095; converte para % de umidade
-// 4095 = completamente seco (0%), 0 = saturado (100%)
-const soilPct = raw => raw != null ? Math.round((1 - raw / 4095) * 1000) / 10 : null;
+// 4095 = sensor no ar / leitura inválida; filtra e usa o valor direto (já em %)
+const soilPct = raw => (raw == null || raw >= 4095) ? null : Number(raw);
 
 // ────────────────────────────────────────────────────────────
 // 4. BUSCA DE DADOS
 // ────────────────────────────────────────────────────────────
-async function fetchSensors() {
-  const { data, error } = await supabaseClientMonitoring
-    .from('leituras_solo')
-    .select('sensor_id')
-    .not('sensor_id', 'is', null);
-
-  if (error) { console.error('[fetchSensors]', error); return []; }
-
-  const unique = [...new Set(data.map(r => r.sensor_id))].filter(Boolean);
-  state.allSensors = unique;
-  return unique;
-}
+// fetchSensors removido — sensor único (ESP32 Sensor 1)
 
 async function fetchReadings() {
   const startDate = getStartDate(state.filter).toISOString();
@@ -74,8 +60,14 @@ async function fetchReadings() {
     .order('created_at', { ascending: true })
     .limit(500);
 
-  if (state.selectedSensors.length > 0) {
-    query = query.in('sensor_id', state.selectedSensors);
+  // Aplica limite superior para filtro personalizado
+  if (state.filter === 'custom') {
+    const endVal = document.getElementById('customEnd')?.value;
+    if (endVal) {
+      const endDate = new Date(endVal);
+      endDate.setHours(23, 59, 59, 999);
+      query = query.lte('created_at', endDate.toISOString());
+    }
   }
 
   const { data, error } = await query;
@@ -103,51 +95,45 @@ function buildMainChart(readings) {
     return;
   }
 
-  // Agrupa por sensor_id (null → 'Sem ID')
-  const sensorIds = [...new Set(readings.map(r => r.sensor_id ?? 'Sem ID'))];
+  // Label do eixo X: hora (filtro 24h) ou dia/hora (7d / custom)
+  const use24h = state.filter === '24h';
+  const labels = readings.map(r =>
+    use24h
+      ? new Date(r.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+      : new Date(r.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
+  );
 
-  const palette = [
-    { line: '#4ade80', fill: 'rgba(74,222,128,0.12)' },
-    { line: '#60a5fa', fill: 'rgba(96,165,250,0.08)' },
-    { line: '#f97316', fill: 'rgba(249,115,22,0.08)' },
-    { line: '#c084fc', fill: 'rgba(192,132,252,0.08)' },
-  ];
+  // Atualiza subtítulo do card
+  const sub = document.getElementById('chartSubLabel');
+  if (sub) sub.textContent = use24h ? 'Evolução por hora — ESP32 Sensor 1' : 'Evolução por dia — ESP32 Sensor 1';
 
-  const allTimes = readings.map(r => r.created_at);
-  const labels   = allTimes.map(fmt);
-
-  const datasets = sensorIds.map((sid, i) => {
-    const sr  = readings.filter(r => (r.sensor_id ?? 'Sem ID') === sid);
-    const map = Object.fromEntries(sr.map(r => [r.created_at, soilPct(r.umid_solo)]));
-    const c   = palette[i % palette.length];
-    return {
-      label: `Sensor ${sid}`,
-      data: allTimes.map(t => map[t] ?? null),
-      borderColor: c.line,
-      backgroundColor: c.fill,
-      fill: i === 0,
-      tension: 0.42,
-      pointRadius: readings.length < 20 ? 4 : 2,
-      pointHoverRadius: 6,
-      borderWidth: 2.5,
-      spanGaps: true,
-    };
-  });
+  const data = readings.map(r => soilPct(r.umid_solo));
 
   if (state.chart) state.chart.destroy();
 
   state.chart = new Chart(canvas, {
     type: 'line',
-    data: { labels, datasets },
+    data: {
+      labels,
+      datasets: [{
+        label: 'Umidade Solo',
+        data,
+        borderColor: '#4ade80',
+        backgroundColor: 'rgba(74,222,128,0.12)',
+        fill: true,
+        tension: 0.42,
+        pointRadius: readings.length < 30 ? 4 : 2,
+        pointHoverRadius: 6,
+        borderWidth: 2.5,
+        spanGaps: true,
+      }],
+    },
     options: {
       responsive: true,
       maintainAspectRatio: false,
       interaction: { mode: 'index', intersect: false },
       plugins: {
-        legend: {
-          display: sensorIds.length > 1,
-          labels: { color: '#94a3b8', font: { family: 'Manrope', size: 12 }, boxWidth: 12 },
-        },
+        legend: { display: false },
         tooltip: {
           backgroundColor: '#0f172a',
           titleColor: '#e2e8f0',
@@ -156,7 +142,7 @@ function buildMainChart(readings) {
           borderWidth: 1,
           padding: 10,
           callbacks: {
-            label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y != null ? ctx.parsed.y.toFixed(1) : '--'}%`,
+            label: ctx => ` Umidade: ${ctx.parsed.y != null ? ctx.parsed.y.toFixed(1) : '--'}%`,
           },
         },
       },
@@ -174,8 +160,8 @@ function buildMainChart(readings) {
     },
   });
 
-  // KPI — média das últimas 20 leituras
-  const recentes = readings.slice(-20).filter(r => r.umid_solo != null);
+  // KPI — média das últimas 20 leituras válidas
+  const recentes = readings.slice(-20).filter(r => soilPct(r.umid_solo) != null);
   if (recentes.length) {
     const avg = recentes.reduce((s, r) => s + soilPct(r.umid_solo), 0) / recentes.length;
     const el  = document.querySelector('.mon-chart-kpi-value');
@@ -298,48 +284,7 @@ function getStatus(r) {
   return { cls: 'ok', label: 'Normal' };
 }
 
-// ────────────────────────────────────────────────────────────
-// 9. SELETOR DE SENSORES
-// ────────────────────────────────────────────────────────────
-function renderSensorSelector() {
-  const list   = document.querySelector('.mon-compare-list');
-  if (!list) return;
-  const addBtn = list.querySelector('.mon-compare-add');
-
-  list.querySelectorAll('.sensor-toggle').forEach(el => el.remove());
-
-  if (!state.allSensors.length) {
-    const msg = document.createElement('p');
-    msg.style.cssText = 'color:#64748b;font-size:12px;margin:8px 0;';
-    msg.textContent   = 'Nenhum sensor_id cadastrado ainda.';
-    addBtn?.before(msg);
-    return;
-  }
-
-  const items = state.allSensors.map(sid => {
-    const active = state.selectedSensors.includes(sid);
-    return `
-      <div class="mon-compare-item sensor-toggle ${active ? 'active' : ''}" data-sid="${sid}">
-        <span>Sensor ${sid}</span>
-        <span class="material-symbols-outlined mon-compare-check">
-          ${active ? 'check_circle' : 'radio_button_unchecked'}
-        </span>
-      </div>`;
-  }).join('');
-
-  addBtn?.insertAdjacentHTML('beforebegin', items);
-
-  list.querySelectorAll('.sensor-toggle').forEach(el => {
-    el.addEventListener('click', () => {
-      const sid = Number(el.dataset.sid);
-      const idx = state.selectedSensors.indexOf(sid);
-      if (idx === -1) state.selectedSensors.push(sid);
-      else            state.selectedSensors.splice(idx, 1);
-      renderSensorSelector();
-      refreshData();
-    });
-  });
-}
+// 9. Seletor de sensores removido — apenas ESP32 Sensor 1 ativo
 
 // ────────────────────────────────────────────────────────────
 // 10. EXPORT CSV
@@ -525,40 +470,85 @@ function injectStyles() {
     .mon-table tbody tr:hover { background:rgba(255,255,255,0.03); }
     @keyframes rowIn { from{opacity:0;transform:translateY(-3px)} to{opacity:1;transform:none} }
     .mon-table tbody tr { animation:rowIn .18s ease both; }
+
+    /* Date picker panel */
+    .custom-picker-panel {
+      background: var(--color-surface, #fff);
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 12px;
+      padding: 12px 16px;
+      display: inline-flex;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+    .custom-picker-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .custom-picker-field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .custom-picker-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .custom-picker-input {
+      background: rgba(0,0,0,0.03);
+      border: 1px solid rgba(0,0,0,0.1);
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 13px;
+      font-family: Manrope, sans-serif;
+      color: inherit;
+      cursor: pointer;
+    }
+    .custom-picker-input:focus { outline: 2px solid #4ade80; }
+    .custom-picker-sep {
+      font-size: 16px;
+      color: #94a3b8;
+      padding-bottom: 6px;
+    }
+    .custom-picker-apply {
+      background: #4ade80;
+      color: #020817;
+      border: none;
+      border-radius: 8px;
+      padding: 7px 16px;
+      font-size: 13px;
+      font-weight: 700;
+      font-family: Manrope, sans-serif;
+      cursor: pointer;
+      transition: opacity .15s;
+    }
+    .custom-picker-apply:hover { opacity: 0.85; }
+
+    /* Sensor info card */
+    .mon-sensor-info { padding: 4px 0; }
+    .mon-sensor-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+    }
+    .mon-sensor-icon { color: #4ade80; font-size: 22px; }
+    .mon-sensor-name { font-size: 13px; font-weight: 600; margin: 0 0 2px; }
+    .mon-sensor-desc { font-size: 11px; color: #94a3b8; margin: 0; }
   `;
   document.head.appendChild(style);
 }
 
 // ────────────────────────────────────────────────────────────
-// 15. DATE PICKER PERSONALIZADO
+// 15. DATE PICKER — já está no HTML, só controla visibilidade
 // ────────────────────────────────────────────────────────────
-function injectCustomDatePicker() {
-  const filterBar = document.querySelector('.filter-bar');
-  if (!filterBar || document.getElementById('customDatePicker')) return;
-
-  const picker = document.createElement('div');
-  picker.id = 'customDatePicker';
-  picker.style.cssText = 'display:none;align-items:center;gap:8px;flex-wrap:wrap;';
-  picker.innerHTML = `
-    <label style="font-size:12px;color:#94a3b8;">De</label>
-    <input id="customStart" type="datetime-local"
-      style="background:#1e293b;border:1px solid rgba(255,255,255,0.1);color:#e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;">
-    <label style="font-size:12px;color:#94a3b8;">Até</label>
-    <input id="customEnd" type="datetime-local"
-      style="background:#1e293b;border:1px solid rgba(255,255,255,0.1);color:#e2e8f0;border-radius:6px;padding:4px 8px;font-size:12px;">
-    <button id="applyCustomFilter"
-      style="background:#4ade80;color:#020817;border:none;border-radius:6px;
-             padding:4px 12px;font-size:12px;font-weight:700;cursor:pointer;">
-      Aplicar
-    </button>
-  `;
-  filterBar.appendChild(picker);
-  document.getElementById('applyCustomFilter')?.addEventListener('click', refreshData);
-}
-
 function toggleDatePicker(show) {
   const el = document.getElementById('customDatePicker');
-  if (el) el.style.display = show ? 'flex' : 'none';
+  if (el) el.style.display = show ? 'block' : 'none';
 }
 
 // ────────────────────────────────────────────────────────────
@@ -576,6 +566,7 @@ function bindEvents() {
   });
 
   document.querySelector('.mon-export-btn')?.addEventListener('click', exportCSV);
+  document.getElementById('applyCustomFilter')?.addEventListener('click', refreshData);
 
   const execBtn = document.getElementById('executeIrrigationPlan');
   if (execBtn) {
@@ -613,15 +604,9 @@ async function loadChartJS() {
 async function init() {
   injectStyles();
   injectCanvases();
-  injectCustomDatePicker();
   bindEvents();
 
   await loadChartJS();
-
-  const sensors = await fetchSensors();
-  state.selectedSensors = sensors.slice(0, 2);
-  renderSensorSelector();
-
   await refreshData();
   subscribeRealtime();
 }
