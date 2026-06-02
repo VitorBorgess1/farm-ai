@@ -83,63 +83,28 @@ async function buscarDadosSoloParaIA() {
     return data;
 }
 
-/* ────────────────────────────────────────────────────────────
-   LÓGICA DINÂMICA DA PÁGINA IA
-   Tabela de referência dos 4 sensores reais:
+/* ════════════════════════════════════════════════════════════
+   CLASSIFICADORES DE SENSORES
+   Toda interpretação dos valores brutos acontece aqui.
+   A IA e a UI recebem apenas classificações prontas — nunca
+   tentam inferir o significado dos números por conta própria.
 
-   | Parâmetro      | Coluna Supabase | Unidade | Faixa Ideal Genérica |
-   |----------------|-----------------|---------|----------------------|
-   | Temperatura ar | temp_ar         | °C      | 15 – 35 °C           |
-   | Umidade do ar  | umid_ar         | %       | 40 – 80 %            |
-   | Umidade solo   | umid_solo       | (raw)   | 1500 – 3000 (ADC)    |
-   | Luz ambiente   | luz_ambiente    | (raw)   | 500 – 3000 (lux ADC) |
+   Tabela de referência:
+   ┌─────────────────┬──────────────┬─────────────────────────────┐
+   │ Parâmetro       │ Coluna       │ Faixas                      │
+   ├─────────────────┼──────────────┼─────────────────────────────┤
+   │ Temperatura ar  │ temp_ar      │ < 10 | 10–15 | 15–35 | >35 │
+   │ Umidade do ar   │ umid_ar      │ < 30 | 30–40 | 40–85 | >85 │
+   │ Umidade solo    │ umid_solo    │ ADC: <1000 | 1000–1800 |    │
+   │  (capacitivo)   │              │   1800–3000 | 3000–3500 |   │
+   │  alto = seco    │              │   >3500                     │
+   │ Luz ambiente    │ luz_ambiente │ ADC: <500 | 500–3000 | >3000│
+   └─────────────────┴──────────────┴─────────────────────────────┘
 
-   Nota sobre umid_solo e luz_ambiente:
-   - O sensor retorna valores ADC brutos (sem conversão para % ou lux).
-   - umid_solo: valores ALTOS = solo SECO (menos condutividade).
-                valores BAIXOS = solo ÚMIDO.
-                Faixa saudável estimada: 1500–3000.
-                > 3500 = muito seco | < 1000 = muito encharcado.
-   - luz_ambiente: valores altos = mais luz.
-                   Faixa útil estimada: 500–3000 para cultivos.
-   ──────────────────────────────────────────────────────────── */
-
-// Pontua um parâmetro com base nos limites ideais (retorna 100, 70 ou 40)
-function pontuarParametro(valor, minIdeal, maxIdeal) {
-    if (valor === null || valor === undefined) return null;
-    const v = parseFloat(valor);
-    if (isNaN(v)) return null;
-
-    if (v >= minIdeal && v <= maxIdeal) return 100;
-
-    const desvio = v < minIdeal
-        ? (minIdeal - v) / minIdeal
-        : (v - maxIdeal) / maxIdeal;
-
-    if (desvio <= 0.25) return 70;
-    return 40;
-}
-
-// Calcula condição geral da lavoura com base nos 4 sensores reais
-function calcularCondicaoGeral(leitura) {
-    const pontos = [
-        pontuarParametro(leitura.temp_ar,       15, 35),
-        pontuarParametro(leitura.umid_ar,       40, 80),
-        pontuarParametro(leitura.umid_solo,     1500, 3000),
-        pontuarParametro(leitura.luz_ambiente,  500,  3000),
-    ].filter(p => p !== null);
-
-    if (pontos.length === 0) return null;
-    return Math.round(pontos.reduce((a, b) => a + b, 0) / pontos.length);
-}
-
-// Retorna classificação textual com base na pontuação média
-function classificarCondicao(pontuacao) {
-    if (pontuacao >= 90) return 'Excelente';
-    if (pontuacao >= 70) return 'Boa';
-    if (pontuacao >= 50) return 'Atenção';
-    return 'Crítica';
-}
+   Pontuação para o score geral (ponderado):
+     Ideal   = 100 pts  |  Atenção = 70 pts  |  Crítico = 40 pts
+   Pesos: umid_solo 40% | temp_ar 25% | umid_ar 20% | luz 15%
+   ════════════════════════════════════════════════════════════ */
 
 // Formata uma string ISO em data/hora pt-BR legível
 function formatarDataHora(isoString) {
@@ -150,225 +115,322 @@ function formatarDataHora(isoString) {
     });
 }
 
-// Analisa a umidade do solo (valor ADC bruto): alto = seco, baixo = encharcado
-function analisarUmidadeSolo(valor) {
+/* ── Classificação da umidade do solo (ADC capacitivo) ────────
+   IMPORTANTE: sensor capacitivo opera de forma INVERTIDA.
+   ADC alto = solo SECO | ADC baixo = solo ENCHARCADO
+   Faixas:
+     < 1000     → Encharcado  (crítico)
+     1000–1800  → Úmido       (atenção)
+     1800–3000  → Ideal       ✓
+     3000–3500  → Seco        (atenção)
+     > 3500     → Muito seco  (crítico)
+   ──────────────────────────────────────────────────────────── */
+function classificarUmidadeSolo(valor) {
     const v = parseFloat(valor);
+    if (isNaN(v)) return { label: 'Sem dados',     nivel: 'sem_dados', pontos: null  };
+    if (v < 1000) return { label: 'Encharcado',    nivel: 'critico',   pontos: 40    };
+    if (v < 1800) return { label: 'Úmido',         nivel: 'atencao',   pontos: 70    };
+    if (v <= 3000) return { label: 'Ideal',        nivel: 'ideal',     pontos: 100   };
+    if (v <= 3500) return { label: 'Seco',         nivel: 'atencao',   pontos: 70    };
+    return              { label: 'Muito seco',     nivel: 'critico',   pontos: 40    };
+}
 
-    if (isNaN(v)) {
-        return {
-            prioridade: 'Sem dados',
-            titulo: 'Sem leitura de umidade do solo',
-            desc: 'Nenhum dado de umidade do solo disponível. Verifique a conexão do sensor.',
-            badgeClass: 'badge-secondary',
-            iconClass: 'icon-secondary',
-        };
-    }
+/* ── Classificação da temperatura do ar (°C) ──────────────────
+   Faixas:
+     < 10°C    → Muito fria  (crítico)
+     10–15°C   → Fria        (atenção)
+     15–35°C   → Ideal       ✓
+     35–38°C   → Elevada     (atenção)
+     > 38°C    → Muito alta  (crítico)
+   ──────────────────────────────────────────────────────────── */
+function classificarTemperaturaAr(valor) {
+    const v = parseFloat(valor);
+    if (isNaN(v))  return { label: 'Sem dados',    nivel: 'sem_dados', pontos: null  };
+    if (v < 10)    return { label: 'Muito fria',   nivel: 'critico',   pontos: 40    };
+    if (v < 15)    return { label: 'Fria',         nivel: 'atencao',   pontos: 70    };
+    if (v <= 35)   return { label: 'Ideal',        nivel: 'ideal',     pontos: 100   };
+    if (v <= 38)   return { label: 'Elevada',      nivel: 'atencao',   pontos: 70    };
+    return               { label: 'Muito alta',    nivel: 'critico',   pontos: 40    };
+}
 
-    // Sensor capacitivo: valor ADC alto = solo seco, valor baixo = solo encharcado
-    if (v > 3500) {
-        return {
-            prioridade: 'Alta Prioridade',
-            titulo: `Solo muito seco detectado (leitura: ${v})`,
-            desc: 'O sensor indica solo com baixa umidade. Recomenda-se irrigação nas próximas horas para evitar estresse hídrico e queda de produtividade.',
-            badgeClass: 'badge-error',
-            iconClass: 'icon-error',
-        };
-    }
+/* ── Classificação da umidade do ar (%) ───────────────────────
+   Faixas:
+     < 30%    → Muito seca   (crítico)
+     30–40%   → Seca         (atenção)
+     40–85%   → Ideal        ✓
+     > 85%    → Muito úmida  (atenção)
+   ──────────────────────────────────────────────────────────── */
+function classificarUmidadeAr(valor) {
+    const v = parseFloat(valor);
+    if (isNaN(v))  return { label: 'Sem dados',    nivel: 'sem_dados', pontos: null  };
+    if (v < 30)    return { label: 'Muito seca',   nivel: 'critico',   pontos: 40    };
+    if (v < 40)    return { label: 'Seca',         nivel: 'atencao',   pontos: 70    };
+    if (v <= 85)   return { label: 'Ideal',        nivel: 'ideal',     pontos: 100   };
+    return               { label: 'Muito úmida',   nivel: 'atencao',   pontos: 70    };
+}
 
-    if (v > 3000) {
-        return {
-            prioridade: 'Atenção',
-            titulo: `Umidade do solo abaixo do ideal (leitura: ${v})`,
-            desc: 'O solo está levemente seco. Considere irrigação moderada e monitore a evolução nas próximas horas.',
-            badgeClass: 'badge-tertiary',
-            iconClass: 'icon-tertiary',
-        };
-    }
+/* ── Classificação da luminosidade (ADC bruto) ────────────────
+   Faixas:
+     < 500      → Baixa        (atenção)
+     500–3000   → Adequada     ✓
+     > 3000     → Intensa      (atenção)
+   ──────────────────────────────────────────────────────────── */
+function classificarLuzAmbiente(valor) {
+    const v = parseFloat(valor);
+    if (isNaN(v))   return { label: 'Sem dados',   nivel: 'sem_dados', pontos: null  };
+    if (v < 500)    return { label: 'Baixa',       nivel: 'atencao',   pontos: 70    };
+    if (v <= 3000)  return { label: 'Adequada',    nivel: 'ideal',     pontos: 100   };
+    return                { label: 'Intensa',      nivel: 'atencao',   pontos: 70    };
+}
 
-    if (v < 1000) {
-        return {
-            prioridade: 'Atenção',
-            titulo: `Solo com excesso de umidade detectado (leitura: ${v})`,
-            desc: 'O sensor indica solo encharcado. Suspenda a irrigação e monitore possível acúmulo de água que pode favorecer fungos e apodrecimento radicular.',
-            badgeClass: 'badge-tertiary',
-            iconClass: 'icon-tertiary',
-        };
-    }
+/* ── Monta o objeto completo de classificações de uma leitura ──
+   Este objeto é a única fonte de verdade: UI e IA o consomem.
+   Nunca interpretam os valores brutos diretamente.
+   ──────────────────────────────────────────────────────────── */
+function classificarLeitura(leitura) {
+    if (!leitura) return null;
+
+    const solo  = classificarUmidadeSolo(leitura.umid_solo);
+    const temp  = classificarTemperaturaAr(leitura.temp_ar);
+    const umidAr = classificarUmidadeAr(leitura.umid_ar);
+    const luz   = classificarLuzAmbiente(leitura.luz_ambiente);
 
     return {
-        prioridade: 'Normal',
-        titulo: `Umidade do solo dentro da faixa recomendada (leitura: ${v})`,
-        desc: 'O solo apresenta nível de umidade adequado. Manter monitoramento contínuo das leituras.',
-        badgeClass: 'badge-secondary',
-        iconClass: 'icon-secondary',
+        temp_ar:               leitura.temp_ar,
+        classificacao_temp:    temp.label,
+        nivel_temp:            temp.nivel,
+
+        umid_ar:               leitura.umid_ar,
+        classificacao_umid_ar: umidAr.label,
+        nivel_umid_ar:         umidAr.nivel,
+
+        umid_solo:             leitura.umid_solo,
+        classificacao_umid_solo: solo.label,
+        nivel_umid_solo:       solo.nivel,
+
+        luz_ambiente:          leitura.luz_ambiente,
+        classificacao_luz:     luz.label,
+        nivel_luz:             luz.nivel,
+
+        // Pontuações individuais para o score geral
+        _pontos: { solo: solo.pontos, temp: temp.pontos, umidAr: umidAr.pontos, luz: luz.pontos },
     };
 }
 
-// Analisa a temperatura do ar em °C
-function analisarTemperaturaAr(valor) {
-    const v = parseFloat(valor);
+/* ── Score geral ponderado ────────────────────────────────────
+   Pesos: umid_solo 40% | temp_ar 25% | umid_ar 20% | luz 15%
+   Resultado: ≥90 Excelente | ≥70 Boa | ≥50 Atenção | <50 Crítica
+   ──────────────────────────────────────────────────────────── */
+function calcularScoreGeral(cls) {
+    if (!cls) return null;
+    const { solo, temp, umidAr, luz } = cls._pontos;
 
-    if (isNaN(v)) {
-        return {
-            prioridade: '—',
-            titulo: 'Sem leitura de temperatura do ar',
-            desc: 'Nenhum dado de temperatura disponível. Verifique o sensor.',
-            badgeClass: 'badge-secondary',
-            iconClass: 'icon-secondary',
-        };
-    }
+    // Calcula apenas com os parâmetros que têm leitura disponível
+    let soma = 0, pesoTotal = 0;
+    const pesos = [
+        { valor: solo,  peso: 0.40 },
+        { valor: temp,  peso: 0.25 },
+        { valor: umidAr, peso: 0.20 },
+        { valor: luz,   peso: 0.15 },
+    ];
+    pesos.forEach(({ valor, peso }) => {
+        if (valor !== null) { soma += valor * peso; pesoTotal += peso; }
+    });
 
-    if (v < 10) {
-        return {
-            prioridade: 'Atenção',
-            titulo: `Temperatura muito baixa (${v}°C)`,
-            desc: 'Temperatura abaixo de 10°C pode causar estresse fisiológico na maioria das culturas. Considere proteção para plantas sensíveis ao frio.',
-            badgeClass: 'badge-tertiary',
-            iconClass: 'icon-tertiary',
-        };
-    }
-
-    if (v > 38) {
-        return {
-            prioridade: 'Alta Prioridade',
-            titulo: `Temperatura muito elevada (${v}°C)`,
-            desc: 'Calor intenso pode causar desidratação foliar e queda de produtividade. Aumente a frequência de irrigação e evite exposição prolongada em horas de pico.',
-            badgeClass: 'badge-error',
-            iconClass: 'icon-error',
-        };
-    }
-
-    if (v > 35) {
-        return {
-            prioridade: 'Atenção',
-            titulo: `Temperatura elevada (${v}°C)`,
-            desc: 'Temperatura acima da faixa ideal. Monitore sinais de estresse hídrico nas plantas e ajuste a irrigação se necessário.',
-            badgeClass: 'badge-tertiary',
-            iconClass: 'icon-tertiary',
-        };
-    }
-
-    return {
-        prioridade: 'Ideal',
-        titulo: `Temperatura do ar adequada (${v}°C)`,
-        desc: 'A temperatura está dentro da faixa favorável para a maioria das culturas. Nenhuma ação imediata necessária.',
-        badgeClass: 'badge-secondary',
-        iconClass: 'icon-secondary',
-    };
+    if (pesoTotal === 0) return null;
+    return Math.round(soma / pesoTotal);
 }
 
-// Analisa a umidade relativa do ar em %
-function analisarUmidadeAr(valor) {
-    const v = parseFloat(valor);
-
-    if (isNaN(v)) {
-        return {
-            titulo: 'Sem leitura de umidade do ar',
-            desc: 'Dado não disponível na última leitura.',
-            badge: '—',
-            badgeClass: 'badge-secondary',
-            dotClass: 'dot-secondary',
-        };
-    }
-
-    if (v < 30) {
-        return {
-            titulo: `Umidade do ar muito baixa (${v}%)`,
-            desc: 'Ar muito seco pode acelerar a evapotranspiração e o ressecamento foliar. Aumente a frequência de irrigação.',
-            badge: 'Prioridade Alta',
-            badgeClass: 'badge-error',
-            dotClass: 'dot-error',
-        };
-    }
-
-    if (v < 40) {
-        return {
-            titulo: `Umidade do ar baixa (${v}%)`,
-            desc: 'Umidade abaixo do ideal. Monitore o estresse hídrico nas plantas e considere irrigação por aspersão leve.',
-            badge: 'Prioridade Média',
-            badgeClass: 'badge-tertiary',
-            dotClass: 'dot-tertiary',
-        };
-    }
-
-    if (v > 85) {
-        return {
-            titulo: `Umidade do ar muito elevada (${v}%)`,
-            desc: 'Alta umidade favorece o desenvolvimento de fungos e doenças foliares. Melhore a ventilação e monitore sinais de míldio ou ferrugem.',
-            badge: 'Prioridade Média',
-            badgeClass: 'badge-tertiary',
-            dotClass: 'dot-tertiary',
-        };
-    }
-
-    return {
-        titulo: `Umidade do ar adequada (${v}%)`,
-        desc: 'Umidade do ar dentro da faixa recomendada. Condições favoráveis para a maioria das culturas.',
-        badge: 'Prioridade Baixa',
-        badgeClass: 'badge-secondary',
-        dotClass: 'dot-secondary',
-    };
+// Converte pontuação numérica em rótulo de classificação final
+function rotularScore(score) {
+    if (score >= 90) return 'Excelente';
+    if (score >= 70) return 'Boa';
+    if (score >= 50) return 'Atenção';
+    return 'Crítica';
 }
 
-// Analisa a luminosidade ambiente (valor ADC bruto do sensor)
-function analisarLuzAmbiente(valor) {
-    const v = parseFloat(valor);
-
-    if (isNaN(v)) {
-        return {
-            titulo: 'Sem leitura de luminosidade',
-            desc: 'Dado não disponível na última leitura.',
-            badge: '—',
-            badgeClass: 'badge-secondary',
-            dotClass: 'dot-secondary',
-        };
-    }
-
-    if (v < 200) {
-        return {
-            titulo: `Luminosidade muito baixa (leitura: ${v})`,
-            desc: 'Pouca luz ambiente detectada. Se for período diurno, verifique sombreamento excessivo que pode reduzir a fotossíntese e o crescimento da cultura.',
-            badge: 'Atenção',
-            badgeClass: 'badge-tertiary',
-            dotClass: 'dot-tertiary',
-        };
-    }
-
-    if (v > 3500) {
-        return {
-            titulo: `Luminosidade muito intensa (leitura: ${v})`,
-            desc: 'Radiação solar elevada. Em conjunto com altas temperaturas, pode causar queimaduras foliares. Monitore plantas mais sensíveis.',
-            badge: 'Atenção',
-            badgeClass: 'badge-tertiary',
-            dotClass: 'dot-tertiary',
-        };
-    }
-
-    return {
-        titulo: `Luminosidade dentro da faixa esperada (leitura: ${v})`,
-        desc: 'Nível de luz ambiente adequado para o desenvolvimento das culturas. Sem ação necessária.',
-        badge: 'Normal',
-        badgeClass: 'badge-secondary',
-        dotClass: 'dot-secondary',
-    };
+/* ── Helpers de UI: converte nível semântico em classes CSS ────
+   nivel: 'ideal' | 'atencao' | 'critico' | 'sem_dados'
+   ──────────────────────────────────────────────────────────── */
+function nivelParaBadgeClass(nivel) {
+    if (nivel === 'ideal')    return 'badge-secondary';
+    if (nivel === 'atencao')  return 'badge-tertiary';
+    if (nivel === 'critico')  return 'badge-error';
+    return 'badge-secondary';
+}
+function nivelParaIconClass(nivel) {
+    if (nivel === 'ideal')    return 'icon-secondary';
+    if (nivel === 'atencao')  return 'icon-tertiary';
+    if (nivel === 'critico')  return 'icon-error';
+    return 'icon-secondary';
+}
+function nivelParaDotClass(nivel) {
+    if (nivel === 'ideal')    return 'dot-secondary';
+    if (nivel === 'atencao')  return 'dot-tertiary';
+    if (nivel === 'critico')  return 'dot-error';
+    return 'dot-secondary';
 }
 
-// Atualiza todos os elementos dinâmicos da página ia.html com os dados dos sensores reais
+/* ── Textos descritivos para a UI (gerados a partir da classificação) ──
+   Recebem o objeto classificado — nunca os valores brutos.
+   ──────────────────────────────────────────────────────────── */
+function textoUmidadeSolo(cls) {
+    const v = cls.umid_solo;
+    switch (cls.nivel_umid_solo) {
+        case 'critico':
+            if (v < 1000) return {
+                prioridade: 'Alta Prioridade',
+                titulo: `Solo encharcado detectado (ADC: ${v})`,
+                desc: 'Excesso de água no solo. Suspenda a irrigação imediatamente e avalie a drenagem. Risco elevado de apodrecimento radicular e proliferação de fungos.',
+            };
+            return {
+                prioridade: 'Alta Prioridade',
+                titulo: `Solo muito seco detectado (ADC: ${v})`,
+                desc: 'Umidade do solo criticamente baixa. Recomenda-se irrigação nas próximas horas para evitar estresse hídrico severo e queda de produtividade.',
+            };
+        case 'atencao':
+            if (v < 1800) return {
+                prioridade: 'Atenção',
+                titulo: `Solo úmido, acima da faixa ideal (ADC: ${v})`,
+                desc: 'Solo com umidade levemente elevada. Monitore a drenagem e evite nova irrigação até retornar à faixa ideal (ADC 1800–3000).',
+            };
+            return {
+                prioridade: 'Atenção',
+                titulo: `Solo seco, abaixo da faixa ideal (ADC: ${v})`,
+                desc: 'Umidade levemente abaixo do recomendado. Considere irrigação moderada e acompanhe a evolução nas próximas horas.',
+            };
+        case 'ideal':
+            return {
+                prioridade: 'Normal',
+                titulo: `Umidade do solo na faixa ideal (ADC: ${v})`,
+                desc: 'Solo com umidade adequada para a maioria das culturas. Manter monitoramento contínuo.',
+            };
+        default:
+            return {
+                prioridade: 'Sem dados',
+                titulo: 'Sem leitura de umidade do solo',
+                desc: 'Nenhum dado disponível. Verifique a conexão do sensor.',
+            };
+    }
+}
+
+function textoTemperaturaAr(cls) {
+    const v = cls.temp_ar;
+    switch (cls.nivel_temp) {
+        case 'critico':
+            if (v < 10) return {
+                prioridade: 'Alta Prioridade',
+                titulo: `Temperatura muito baixa (${v}°C)`,
+                desc: 'Frio intenso pode causar estresse fisiológico e danos celulares. Considere proteção para culturas sensíveis ao frio.',
+            };
+            return {
+                prioridade: 'Alta Prioridade',
+                titulo: `Temperatura muito elevada (${v}°C)`,
+                desc: 'Calor intenso pode causar desidratação foliar e queda de produtividade. Temperaturas elevadas aumentam a evaporação da água do solo — aumente a frequência de irrigação.',
+            };
+        case 'atencao':
+            if (v < 15) return {
+                prioridade: 'Atenção',
+                titulo: `Temperatura fria (${v}°C)`,
+                desc: 'Temperatura abaixo da faixa ideal. Monitore culturas mais sensíveis e considere proteção noturna se a tendência continuar.',
+            };
+            return {
+                prioridade: 'Atenção',
+                titulo: `Temperatura elevada (${v}°C)`,
+                desc: 'Temperatura acima da faixa ideal. Monitore sinais de estresse hídrico e ajuste a irrigação se necessário.',
+            };
+        case 'ideal':
+            return {
+                prioridade: 'Ideal',
+                titulo: `Temperatura do ar adequada (${v}°C)`,
+                desc: 'Temperatura dentro da faixa favorável para a maioria das culturas. Nenhuma ação imediata necessária.',
+            };
+        default:
+            return {
+                prioridade: '—',
+                titulo: 'Sem leitura de temperatura do ar',
+                desc: 'Nenhum dado disponível. Verifique o sensor.',
+            };
+    }
+}
+
+function textoUmidadeAr(cls) {
+    switch (cls.nivel_umid_ar) {
+        case 'critico':
+            return {
+                badge: 'Prioridade Alta',
+                titulo: `Umidade do ar muito baixa (${cls.umid_ar}%)`,
+                desc: 'Ar muito seco acelera a evapotranspiração e o ressecamento foliar. Aumente a frequência de irrigação para compensar a perda de umidade.',
+            };
+        case 'atencao':
+            if (cls.umid_ar < 40) return {
+                badge: 'Prioridade Média',
+                titulo: `Umidade do ar baixa (${cls.umid_ar}%)`,
+                desc: 'Umidade abaixo do ideal. Monitore sinais de estresse hídrico nas plantas e considere irrigação por aspersão leve.',
+            };
+            return {
+                badge: 'Prioridade Média',
+                titulo: `Umidade do ar muito elevada (${cls.umid_ar}%)`,
+                desc: 'Alta umidade favorece o desenvolvimento de fungos e doenças foliares. Melhore a ventilação e monitore sinais de míldio ou ferrugem.',
+            };
+        case 'ideal':
+            return {
+                badge: 'Normal',
+                titulo: `Umidade do ar adequada (${cls.umid_ar}%)`,
+                desc: 'Umidade do ar dentro da faixa recomendada. Condições favoráveis para a maioria das culturas.',
+            };
+        default:
+            return {
+                badge: '—',
+                titulo: 'Sem leitura de umidade do ar',
+                desc: 'Dado não disponível na última leitura.',
+            };
+    }
+}
+
+function textoLuzAmbiente(cls) {
+    switch (cls.nivel_luz) {
+        case 'atencao':
+            if (cls.luz_ambiente < 500) return {
+                badge: 'Atenção',
+                titulo: `Luminosidade baixa (ADC: ${cls.luz_ambiente})`,
+                desc: 'Pouca luz detectada. Se for período diurno, verifique possível sombreamento excessivo que pode reduzir a fotossíntese e o crescimento da cultura.',
+            };
+            return {
+                badge: 'Atenção',
+                titulo: `Luminosidade intensa (ADC: ${cls.luz_ambiente})`,
+                desc: 'Radiação solar elevada. Em conjunto com altas temperaturas, pode causar queimaduras foliares. Monitore culturas mais sensíveis.',
+            };
+        case 'ideal':
+            return {
+                badge: 'Normal',
+                titulo: `Luminosidade adequada (ADC: ${cls.luz_ambiente})`,
+                desc: 'Nível de luz ambiente favorável para o desenvolvimento das culturas. Sem ação necessária.',
+            };
+        default:
+            return {
+                badge: '—',
+                titulo: 'Sem leitura de luminosidade',
+                desc: 'Dado não disponível na última leitura.',
+            };
+    }
+}
+
+// Atualiza todos os elementos dinâmicos da página ia.html com base nas classificações
 async function atualizarPaginaIA() {
     const dados = await buscarDadosSoloParaIA();
     const leitura = dados && dados.length > 0 ? dados[0] : null;
 
-    /* ── Hero: Condição Geral ─────────────────────────── */
+    // Gera o objeto de classificações — fonte única de verdade para UI e IA
+    const cls = classificarLeitura(leitura);
+
+    /* ── Hero: Score Geral ────────────────────────────── */
     const elCondicao = document.getElementById('heroCondicaoGeral');
     if (elCondicao) {
-        if (leitura) {
-            const cond = calcularCondicaoGeral(leitura);
-            elCondicao.textContent = cond !== null
-                ? `${cond}% — ${classificarCondicao(cond)}`
-                : 'Sem dados';
-        } else {
-            elCondicao.textContent = 'Sem dados';
-        }
+        const score = calcularScoreGeral(cls);
+        elCondicao.textContent = score !== null
+            ? `${score}% — ${rotularScore(score)}`
+            : 'Sem dados';
     }
 
     /* ── Hero: Última Leitura ─────────────────────────── */
@@ -380,64 +442,72 @@ async function atualizarPaginaIA() {
     }
 
     /* ── Card Umidade do Solo ─────────────────────────── */
-    const analiseUmidSolo = analisarUmidadeSolo(leitura?.umid_solo);
+    const tSolo = cls ? textoUmidadeSolo(cls) : { prioridade: 'Sem dados', titulo: 'Sem leitura', desc: 'Verifique os sensores.' };
+    const nivelSolo = cls?.nivel_umid_solo ?? 'sem_dados';
+
     const elUmidSoloBadge  = document.getElementById('umidSoloBadge');
     const elUmidSoloTitulo = document.getElementById('umidSoloTitulo');
     const elUmidSoloDesc   = document.getElementById('umidSoloDesc');
     const elUmidSoloIcon   = document.getElementById('umidSoloIconBox');
 
     if (elUmidSoloBadge) {
-        elUmidSoloBadge.textContent = analiseUmidSolo.prioridade;
-        elUmidSoloBadge.className = `badge ${analiseUmidSolo.badgeClass}`;
+        elUmidSoloBadge.textContent = tSolo.prioridade;
+        elUmidSoloBadge.className   = `badge ${nivelParaBadgeClass(nivelSolo)}`;
     }
-    if (elUmidSoloTitulo) elUmidSoloTitulo.textContent = analiseUmidSolo.titulo;
-    if (elUmidSoloDesc)   elUmidSoloDesc.textContent   = analiseUmidSolo.desc;
-    if (elUmidSoloIcon)   elUmidSoloIcon.className = `icon-box ${analiseUmidSolo.iconClass}`;
+    if (elUmidSoloTitulo) elUmidSoloTitulo.textContent = tSolo.titulo;
+    if (elUmidSoloDesc)   elUmidSoloDesc.textContent   = tSolo.desc;
+    if (elUmidSoloIcon)   elUmidSoloIcon.className     = `icon-box ${nivelParaIconClass(nivelSolo)}`;
 
     /* ── Card Temperatura do Ar ───────────────────────── */
-    const analiseTempAr = analisarTemperaturaAr(leitura?.temp_ar);
+    const tTemp = cls ? textoTemperaturaAr(cls) : { prioridade: '—', titulo: 'Sem leitura', desc: 'Verifique os sensores.' };
+    const nivelTemp = cls?.nivel_temp ?? 'sem_dados';
+
     const elTempArBadge  = document.getElementById('tempArBadge');
     const elTempArTitulo = document.getElementById('tempArTitulo');
     const elTempArDesc   = document.getElementById('tempArDesc');
     const elTempArIcon   = document.getElementById('tempArIconBox');
 
     if (elTempArBadge) {
-        elTempArBadge.textContent = analiseTempAr.prioridade;
-        elTempArBadge.className = `badge ${analiseTempAr.badgeClass}`;
+        elTempArBadge.textContent = tTemp.prioridade;
+        elTempArBadge.className   = `badge ${nivelParaBadgeClass(nivelTemp)}`;
     }
-    if (elTempArTitulo) elTempArTitulo.textContent = analiseTempAr.titulo;
-    if (elTempArDesc)   elTempArDesc.textContent   = analiseTempAr.desc;
-    if (elTempArIcon)   elTempArIcon.className = `icon-box ${analiseTempAr.iconClass}`;
+    if (elTempArTitulo) elTempArTitulo.textContent = tTemp.titulo;
+    if (elTempArDesc)   elTempArDesc.textContent   = tTemp.desc;
+    if (elTempArIcon)   elTempArIcon.className     = `icon-box ${nivelParaIconClass(nivelTemp)}`;
 
     /* ── Card Umidade do Ar ───────────────────────────── */
-    const analiseUmidAr = analisarUmidadeAr(leitura?.umid_ar);
+    const tUmidAr = cls ? textoUmidadeAr(cls) : { badge: '—', titulo: 'Sem leitura', desc: 'Verifique os sensores.' };
+    const nivelUmidAr = cls?.nivel_umid_ar ?? 'sem_dados';
+
     const elUmidArTitulo = document.getElementById('recUmidArTitulo');
     const elUmidArDesc   = document.getElementById('recUmidArDesc');
     const elUmidArBadge  = document.getElementById('recUmidArBadge');
     const elDotUmidAr    = document.getElementById('dotUmidAr');
 
-    if (elUmidArTitulo) elUmidArTitulo.textContent = analiseUmidAr.titulo;
-    if (elUmidArDesc)   elUmidArDesc.textContent   = analiseUmidAr.desc;
+    if (elUmidArTitulo) elUmidArTitulo.textContent = tUmidAr.titulo;
+    if (elUmidArDesc)   elUmidArDesc.textContent   = tUmidAr.desc;
     if (elUmidArBadge) {
-        elUmidArBadge.textContent = analiseUmidAr.badge;
-        elUmidArBadge.className = `badge ${analiseUmidAr.badgeClass}`;
+        elUmidArBadge.textContent = tUmidAr.badge;
+        elUmidArBadge.className   = `badge ${nivelParaBadgeClass(nivelUmidAr)}`;
     }
-    if (elDotUmidAr) elDotUmidAr.className = `dot ${analiseUmidAr.dotClass}`;
+    if (elDotUmidAr) elDotUmidAr.className = `dot ${nivelParaDotClass(nivelUmidAr)}`;
 
     /* ── Card Luz Ambiente ────────────────────────────── */
-    const analiseLuz = analisarLuzAmbiente(leitura?.luz_ambiente);
+    const tLuz = cls ? textoLuzAmbiente(cls) : { badge: '—', titulo: 'Sem leitura', desc: 'Verifique os sensores.' };
+    const nivelLuz = cls?.nivel_luz ?? 'sem_dados';
+
     const elLuzTitulo = document.getElementById('recLuzAmbienteTitulo');
     const elLuzDesc   = document.getElementById('recLuzAmbienteDesc');
     const elLuzBadge  = document.getElementById('recLuzAmbienteBadge');
     const elDotLuz    = document.getElementById('dotLuzAmbiente');
 
-    if (elLuzTitulo) elLuzTitulo.textContent = analiseLuz.titulo;
-    if (elLuzDesc)   elLuzDesc.textContent   = analiseLuz.desc;
+    if (elLuzTitulo) elLuzTitulo.textContent = tLuz.titulo;
+    if (elLuzDesc)   elLuzDesc.textContent   = tLuz.desc;
     if (elLuzBadge) {
-        elLuzBadge.textContent = analiseLuz.badge;
-        elLuzBadge.className = `badge ${analiseLuz.badgeClass}`;
+        elLuzBadge.textContent = tLuz.badge;
+        elLuzBadge.className   = `badge ${nivelParaBadgeClass(nivelLuz)}`;
     }
-    if (elDotLuz) elDotLuz.className = `dot ${analiseLuz.dotClass}`;
+    if (elDotLuz) elDotLuz.className = `dot ${nivelParaDotClass(nivelLuz)}`;
 
     /* ── Card Ações da Semana: timestamp ─────────────── */
     const elAcoesTs = document.getElementById('acoesSemanaAtualizadoEm');
