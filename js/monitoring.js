@@ -161,12 +161,11 @@ function buildMainChart(readings) {
   });
 
   // KPI — média das últimas 20 leituras válidas
-  const recentes = readings.slice(-20).filter(r => soilPct(r.umid_solo) != null);
-  if (recentes.length) {
-    const avg = recentes.reduce((s, r) => s + soilPct(r.umid_solo), 0) / recentes.length;
-    const el  = document.querySelector('.mon-chart-kpi-value');
-    if (el) el.textContent = avg.toFixed(1) + '%';
-  }
+  const kpiEl = document.querySelector('.mon-chart-kpi-value');
+  const recentes = readings.slice(-20).map(r => soilPct(r.umid_solo)).filter(v => v != null);
+  if (kpiEl) kpiEl.textContent = recentes.length
+    ? (recentes.reduce((s, v) => s + v, 0) / recentes.length).toFixed(1) + '%'
+    : '--';
 }
 
 // ────────────────────────────────────────────────────────────
@@ -369,7 +368,9 @@ async function refreshData() {
 
 function showLoading(on) {
   const el = document.getElementById('loadingOverlay');
-  if (el) el.style.opacity = on ? '1' : '0';
+  if (!el) return;
+  el.style.opacity = on ? '1' : '0';
+  el.style.pointerEvents = on ? 'all' : 'none';
 }
 
 // ────────────────────────────────────────────────────────────
