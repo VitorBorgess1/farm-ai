@@ -44,6 +44,10 @@ function getStartDate(filter) {
 const fmt  = iso => new Date(iso).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 const fmtD = iso => new Date(iso).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
 
+// Sensor analógico retorna 0–4095; converte para % de umidade
+// 4095 = completamente seco (0%), 0 = saturado (100%)
+const soilPct = raw => raw != null ? Math.round((1 - raw / 4095) * 1000) / 10 : null;
+
 // ────────────────────────────────────────────────────────────
 // 4. BUSCA DE DADOS
 // ────────────────────────────────────────────────────────────
@@ -114,7 +118,7 @@ function buildMainChart(readings) {
 
   const datasets = sensorIds.map((sid, i) => {
     const sr  = readings.filter(r => (r.sensor_id ?? 'Sem ID') === sid);
-    const map = Object.fromEntries(sr.map(r => [r.created_at, r.umid_solo]));
+    const map = Object.fromEntries(sr.map(r => [r.created_at, soilPct(r.umid_solo)]));
     const c   = palette[i % palette.length];
     return {
       label: `Sensor ${sid}`,
@@ -173,7 +177,7 @@ function buildMainChart(readings) {
   // KPI — média das últimas 20 leituras
   const recentes = readings.slice(-20).filter(r => r.umid_solo != null);
   if (recentes.length) {
-    const avg = recentes.reduce((s, r) => s + r.umid_solo, 0) / recentes.length;
+    const avg = recentes.reduce((s, r) => s + soilPct(r.umid_solo), 0) / recentes.length;
     const el  = document.querySelector('.mon-chart-kpi-value');
     if (el) el.textContent = avg.toFixed(1) + '%';
   }
@@ -278,7 +282,7 @@ function renderTable(readings) {
       <tr>
         <td>${fmtD(r.created_at)}</td>
         <td>${sensorLabel}</td>
-        <td>${r.umid_solo != null ? r.umid_solo.toFixed(1) + '%' : '—'}</td>
+        <td>${r.umid_solo != null ? soilPct(r.umid_solo).toFixed(1) + '%' : '—'}</td>
         <td>${r.temp_ar != null ? r.temp_ar.toFixed(1) + '°C' : '—'}</td>
         <td><span class="status-chip status-chip--${status.cls}">${status.label}</span></td>
       </tr>`;
@@ -286,7 +290,7 @@ function renderTable(readings) {
 }
 
 function getStatus(r) {
-  const u    = r.umid_solo;
+  const u    = soilPct(r.umid_solo);
   const temp = r.temp_ar;
   if (u    != null && u    < 20)           return { cls: 'danger', label: 'Crítico'    };
   if (u    != null && u    < 35)           return { cls: 'warn',   label: 'Alerta'     };
@@ -347,7 +351,7 @@ function exportCSV() {
     return [
       fmtD(r.created_at),
       r.sensor_id ?? '',
-      r.umid_solo?.toFixed(1)     ?? '',
+      r.umid_solo != null ? soilPct(r.umid_solo).toFixed(1) : '',
       r.temp_ar?.toFixed(1)       ?? '',
       r.umid_ar?.toFixed(1)       ?? '',
       r.luz_ambiente?.toFixed(0)  ?? '',
@@ -442,15 +446,8 @@ function injectCanvases() {
     miniBars.replaceWith(wrap);
   }
 
-  // Renomeia o card de métricas para "Temperatura do Ar"
-  const labelEls = document.querySelectorAll('.mon-metric-label');
-  labelEls.forEach(el => {
-    if (el.textContent.trim() === 'Temperatura') {
-      el.textContent = 'Temperatura do Ar';
-      const unit = el.closest('.mon-metric-card')?.querySelector('.mon-metric-unit');
-      if (unit) unit.textContent = '°C';
-    }
-  });
+  // A unidade do card de temperatura já está correta no HTML
+  // Não é necessário renomear via JS
 
   // Badge "Ao Vivo"
   const topbarRight = document.querySelector('.topbar-right');
