@@ -10,90 +10,51 @@
 </head>
 <body>
 
-  <!-- SideNavBar -->
   <aside class="sidebar">
     <div class="sidebar-brand">
-      <div class="brand-icon">
-        <span class="material-symbols-outlined filled">eco</span>
-      </div>
+      <div class="brand-icon"><span class="material-symbols-outlined filled">eco</span></div>
       <div>
         <h1 class="brand-name">FarmAI</h1>
         <p class="brand-sub">Inteligência Agrícola</p>
       </div>
     </div>
-
     <nav class="sidebar-nav">
-      <a class="nav-link" href="index.html">
-        <span class="material-symbols-outlined">dashboard</span>
-        Painel
-      </a>
-      <a class="nav-link" href="monitoring.html">
-        <span class="material-symbols-outlined">monitoring</span>
-        Monitoramento
-      </a>
-      <a class="nav-link" href="ia.html">
-        <span class="material-symbols-outlined">psychology</span>
-        Análises IA
-      </a>
-      <a class="nav-link" href="alerts.html">
-        <span class="material-symbols-outlined">notifications_active</span>
-        Alertas
-      </a>
-      <a class="nav-link active" href="device.html">
-        <span class="material-symbols-outlined filled">router</span>
-        Dispositivos
-      </a>
+      <a class="nav-link" href="index.html"><span class="material-symbols-outlined">dashboard</span>Painel</a>
+      <a class="nav-link" href="monitoring.html"><span class="material-symbols-outlined">monitoring</span>Monitoramento</a>
+      <a class="nav-link" href="ia.html"><span class="material-symbols-outlined">psychology</span>Análises IA</a>
+      <a class="nav-link" href="alerts.html"><span class="material-symbols-outlined">notifications_active</span>Alertas</a>
+      <a class="nav-link active" href="device.html"><span class="material-symbols-outlined filled">router</span>Dispositivos</a>
     </nav>
-
     <div class="sidebar-footer">
-      <button class="btn-add-sensor">
-        <span class="material-symbols-outlined">add_circle</span>
-        Adicionar Sensor
-      </button>
-      <a class="nav-link-small" href="#">
-        <span class="material-symbols-outlined">help</span>
-        Suporte
-      </a>
-      <a class="nav-link-small" href="#">
-        <span class="material-symbols-outlined">person</span>
-        Conta
-      </a>
+      <button class="btn-add-sensor"><span class="material-symbols-outlined">add_circle</span>Adicionar Sensor</button>
+      <a class="nav-link-small" href="#"><span class="material-symbols-outlined">help</span>Suporte</a>
+      <a class="nav-link-small" href="#"><span class="material-symbols-outlined">person</span>Conta</a>
     </div>
   </aside>
 
-  <!-- Main Content Wrapper -->
   <main class="main-content">
 
-    <!-- TopNavBar -->
     <header class="topbar">
       <div class="topbar-left">
-        <button class="icon-btn topbar-menu-mobile">
-          <span class="material-symbols-outlined">menu</span>
-        </button>
+        <button class="icon-btn topbar-menu-mobile"><span class="material-symbols-outlined">menu</span></button>
         <span class="topbar-brand-mobile">FarmAI</span>
         <div class="search-bar">
           <span class="material-symbols-outlined">search</span>
-          <input type="text" placeholder="Buscar áreas e sensores..."/>
+          <input id="deviceSearchInput" type="text" placeholder="Buscar dispositivos..."/>
         </div>
       </div>
       <div class="topbar-right">
-        <button class="icon-btn">
-          <span class="material-symbols-outlined">notifications</span>
-        </button>
-        <button class="icon-btn">
-          <span class="material-symbols-outlined">settings</span>
-        </button>
+        <button class="icon-btn"><span class="material-symbols-outlined">notifications</span></button>
+        <button class="icon-btn"><span class="material-symbols-outlined">settings</span></button>
         <div class="avatar">
-          <img alt="User profile avatar"
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuDs-rOnAeUewDqkExuYzzoIs-LZU4Cms-oQ9T2Rke_dkyi3Vpknl8DZuePzPweneq70UEQKA70Wqig8eJTEq0v9gWTH4JYsDVpJxY-kteTqJlZo7eD9qwcEs7zhMH_FVrGr8PioemYr6nJidPWDcP2FSt4Uj7O_bb8DXVrD9kAfy9OKprquPgBjnSpu5UIBfHPACttEoNNDGIscfg9yacjQgxNsOoCgpvDCVrkHn6t2IXWB_5kB99_U43Ki_JftC_D0qcVGciOfuBVI"/>
+          <img alt="User profile avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDs-rOnAeUewDqkExuYzzoIs-LZU4Cms-oQ9T2Rke_dkyi3Vpknl8DZuePzPweneq70UEQKA70Wqig8eJTEq0v9gWTH4JYsDVpJxY-kteTqJlZo7eD9qwcEs7zhMH_FVrGr8PioemYr6nJidPWDcP2FSt4Uj7O_bb8DXVrD9kAfy9OKprquPgBjnSpu5UIBfHPACttEoNNDGIscfg9yacjQgxNsOoCgpvDCVrkHn6t2IXWB_5kB99_U43Ki_JftC_D0qcVGciOfuBVI"/>
         </div>
       </div>
     </header>
 
-    <!-- Content Canvas -->
     <div class="content-canvas">
 
-      <!-- Page Hero -->
+      <!-- Hero -->
       <header class="dev-hero">
         <div>
           <nav class="breadcrumb">
@@ -102,84 +63,98 @@
             <span class="breadcrumb-current">Dispositivos</span>
           </nav>
           <h1 class="dev-hero-title">Sensores Conectados</h1>
-          <p class="dev-hero-desc">Gerencie sua rede de hardware distribuído. Telemetria em tempo real e diagnósticos de saúde para sua infraestrutura de agricultura de precisão.</p>
+          <p class="dev-hero-desc">Telemetria em tempo real e diagnósticos de saúde da sua infraestrutura de agricultura de precisão.</p>
         </div>
 
-        <!-- KPI Counter Bar -->
+        <!-- KPIs dinâmicos -->
         <div class="dev-kpi-bar">
           <div class="dev-kpi-item">
-            <span class="dev-kpi-value dev-kpi-value--primary">24</span>
+            <span class="dev-kpi-value dev-kpi-value--primary" id="kpiAtivos">—</span>
             <span class="dev-kpi-label">Ativos</span>
           </div>
           <div class="dev-kpi-divider"></div>
           <div class="dev-kpi-item">
-            <span class="dev-kpi-value dev-kpi-value--error">2</span>
-            <span class="dev-kpi-label">Críticos</span>
+            <span class="dev-kpi-value dev-kpi-value--error" id="kpiCriticos">—</span>
+            <span class="dev-kpi-label">Alertas</span>
           </div>
           <div class="dev-kpi-divider"></div>
           <div class="dev-kpi-item">
-            <span class="dev-kpi-value dev-kpi-value--muted">1</span>
-            <span class="dev-kpi-label">Sincronizando</span>
+            <span class="dev-kpi-value dev-kpi-value--muted" id="kpiLeituras">—</span>
+            <span class="dev-kpi-label">Leituras Hoje</span>
           </div>
         </div>
       </header>
 
-      <!-- Device Search & Filter Bar -->
-      <section class="dev-filter-bar">
-        <div class="dev-filter-search">
-          <span class="material-symbols-outlined dev-filter-search-icon">search</span>
-          <input
-            class="dev-filter-input"
-            id="deviceSearchInput"
-            type="text"
-            placeholder="Buscar por Número de Série ou Nome do Campo..."/>
-        </div>
-        <div class="dev-filter-pills">
-          <button class="dev-filter-pill dev-filter-pill--active" data-type="all">Todos os Sensores</button>
-          <button class="dev-filter-pill" data-type="soil">Umidade do Solo</button>
-          <button class="dev-filter-pill" data-type="nitrogen">Fluxo de Nitrogênio</button>
-          <button class="dev-filter-pill" data-type="lidar">Scanners Lidar</button>
-        </div>
-      </section>
-
       <!-- Sensor Grid -->
       <div class="dev-grid">
 
-        <!-- Card 1: Online / Soil Moisture -->
-        <div class="dev-card" data-type="soil">
+        <!-- Card ESP32 Sensor 1 — dinâmico -->
+        <div class="dev-card" data-type="soil" id="devCardEsp32">
           <div class="dev-card-top">
             <div class="icon-box icon-primary">
-              <span class="material-symbols-outlined filled">water_drop</span>
+              <span class="material-symbols-outlined filled">router</span>
             </div>
             <div class="dev-card-status-col">
-              <span class="dev-status-pill dev-status-pill--online">
+              <span class="dev-status-pill dev-status-pill--online" id="devEsp32Status">
                 <span class="dev-status-dot dev-status-dot--pulse"></span>
-                Online
+                <span id="devEsp32StatusLabel">Verificando...</span>
               </span>
-              <span class="dev-serial">SN: FA-2024-001</span>
+              <span class="dev-serial">SN: ESP32-S3-001</span>
             </div>
           </div>
-          <h3 class="dev-card-name">North Field S1</h3>
-          <p class="dev-card-model">Soil Moisture Matrix v2.1</p>
+          <h3 class="dev-card-name">ESP32 — Sensor 1</h3>
+          <p class="dev-card-model">Umidade · Temperatura · Luz Ambiente</p>
           <div class="dev-card-metrics">
             <div>
               <p class="dev-metric-label">Umidade do Solo</p>
-              <p class="dev-metric-value">34.2%</p>
+              <p class="dev-metric-value" id="devEsp32Umid">—</p>
             </div>
             <div class="dev-card-metrics-right">
               <p class="dev-metric-label">Bateria</p>
-              <p class="dev-metric-value--sm">92%</p>
+              <p class="dev-metric-value--sm" id="devEsp32Bateria">—</p>
             </div>
           </div>
           <div class="dev-card-footer">
-            <span>Última sinc.: há 2min</span>
+            <span id="devEsp32Sync">Carregando...</span>
             <button class="icon-btn dev-card-more" aria-label="Mais opções">
               <span class="material-symbols-outlined">more_horiz</span>
             </button>
           </div>
         </div>
 
-        <!-- Card 2: Online / Temperature -->
+        <!-- Card Especificações Técnicas (estático real) -->
+        <div class="dev-card dev-card--hero" data-type="soil">
+          <div class="dev-card-hero-inner">
+            <div class="dev-card-hero-top">
+              <div>
+                <span class="dev-hero-firmware-badge">Hardware Ativo</span>
+                <h3 class="dev-card-hero-name">ESP32-S3 FarmAI Kit</h3>
+                <p class="dev-card-hero-sub">Plataforma: Área de Plantio Principal</p>
+              </div>
+              <div class="dev-card-hero-icon-wrap">
+                <span class="material-symbols-outlined">memory</span>
+              </div>
+            </div>
+            <div class="dev-card-hero-stats">
+              <div>
+                <p class="dev-hero-stat-label">Sensor Solo</p>
+                <p class="dev-hero-stat-value">Capacitivo</p>
+              </div>
+              <div>
+                <p class="dev-hero-stat-label">Protocolo</p>
+                <p class="dev-hero-stat-value">Wi-Fi 2.4GHz</p>
+              </div>
+              <div>
+                <p class="dev-hero-stat-label">Intervalo</p>
+                <p class="dev-hero-stat-value" id="devIntervaloDados">—</p>
+              </div>
+            </div>
+          </div>
+          <div class="dev-card-hero-glow"></div>
+          <div class="dev-card-hero-dots" aria-hidden="true"></div>
+        </div>
+
+        <!-- Card Temperatura + Luz — dinâmico -->
         <div class="dev-card" data-type="soil">
           <div class="dev-card-top">
             <div class="icon-box icon-tertiary">
@@ -190,144 +165,64 @@
                 <span class="dev-status-dot"></span>
                 Online
               </span>
-              <span class="dev-serial">SN: FA-2024-002</span>
+              <span class="dev-serial">Módulo DHT22</span>
             </div>
           </div>
-          <h3 class="dev-card-name">South Field T4</h3>
-          <p class="dev-card-model">Thermal Integrity Hub</p>
+          <h3 class="dev-card-name">Temperatura e Umidade do Ar</h3>
+          <p class="dev-card-model">Sensor integrado ESP32</p>
           <div class="dev-card-metrics">
             <div>
-              <p class="dev-metric-label">Temp</p>
-              <p class="dev-metric-value">22.4°C</p>
+              <p class="dev-metric-label">Temperatura</p>
+              <p class="dev-metric-value" id="devTempValor">—</p>
             </div>
             <div class="dev-card-metrics-right">
-              <p class="dev-metric-label">Bateria</p>
-              <p class="dev-metric-value--sm">78%</p>
+              <p class="dev-metric-label">Umid. Ar</p>
+              <p class="dev-metric-value--sm" id="devUmidArValor">—</p>
             </div>
           </div>
           <div class="dev-card-footer">
-            <span>Última sinc.: há 14min</span>
-            <button class="icon-btn dev-card-more" aria-label="Mais opções">
+            <span id="devTempSync">Carregando...</span>
+            <button class="icon-btn dev-card-more">
               <span class="material-symbols-outlined">more_horiz</span>
             </button>
           </div>
         </div>
 
-        <!-- Card 3: Offline -->
-        <div class="dev-card dev-card--offline" data-type="soil">
+        <!-- Card Luminosidade — dinâmico -->
+        <div class="dev-card" data-type="soil">
           <div class="dev-card-top">
-            <div class="icon-box dev-card-icon--offline">
-              <span class="material-symbols-outlined">wifi_off</span>
+            <div class="icon-box icon-secondary">
+              <span class="material-symbols-outlined filled">wb_sunny</span>
             </div>
             <div class="dev-card-status-col">
-              <span class="dev-status-pill dev-status-pill--offline">Offline</span>
-              <span class="dev-serial">SN: FA-2023-112</span>
-            </div>
-          </div>
-          <h3 class="dev-card-name">East Orchard 09</h3>
-          <p class="dev-card-model">Humidity Sentinel X</p>
-          <div class="dev-card-metrics">
-            <div>
-              <p class="dev-metric-label">Umidade</p>
-              <p class="dev-metric-value dev-metric-value--faded">--%</p>
-            </div>
-            <div class="dev-card-metrics-right">
-              <p class="dev-metric-label">Bateria</p>
-              <p class="dev-metric-value--sm dev-metric-value--faded">0%</p>
-            </div>
-          </div>
-          <div class="dev-card-footer">
-            <span>Offline há 3 dias</span>
-            <button class="icon-btn dev-card-more" aria-label="Reconectar">
-              <span class="material-symbols-outlined">refresh</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Card 4: Bateria Fraca -->
-        <div class="dev-card dev-card--warning" data-type="nitrogen">
-          <div class="dev-card-top">
-            <div class="icon-box icon-error">
-              <span class="material-symbols-outlined filled">bolt</span>
-            </div>
-            <div class="dev-card-status-col">
-              <span class="dev-status-pill dev-status-pill--battery">
-                <span class="dev-status-dot dev-status-dot--error"></span>
-                Bateria Fraca
+              <span class="dev-status-pill dev-status-pill--online">
+                <span class="dev-status-dot"></span>
+                Online
               </span>
-              <span class="dev-serial">SN: FA-2024-045</span>
+              <span class="dev-serial">Módulo LDR</span>
             </div>
           </div>
-          <h3 class="dev-card-name">Central Well P1</h3>
-          <p class="dev-card-model">Pressure Flow Monitor</p>
+          <h3 class="dev-card-name">Luz Ambiente</h3>
+          <p class="dev-card-model">Sensor fotoresistivo integrado</p>
           <div class="dev-card-metrics">
             <div>
-              <p class="dev-metric-label">Vazão</p>
-              <p class="dev-metric-value">12.8 L/m</p>
+              <p class="dev-metric-label">Leitura ADC</p>
+              <p class="dev-metric-value" id="devLuzValor">—</p>
             </div>
             <div class="dev-card-metrics-right">
-              <p class="dev-metric-label">Bateria</p>
-              <p class="dev-metric-value--sm dev-metric-value--error">4%</p>
+              <p class="dev-metric-label">Nível</p>
+              <p class="dev-metric-value--sm" id="devLuzNivel">—</p>
             </div>
           </div>
           <div class="dev-card-footer">
-            <span>Última sinc.: há 45min</span>
-            <button class="icon-btn dev-card-more" aria-label="Aviso">
-              <span class="material-symbols-outlined">warning</span>
+            <span id="devLuzSync">Carregando...</span>
+            <button class="icon-btn dev-card-more">
+              <span class="material-symbols-outlined">more_horiz</span>
             </button>
           </div>
         </div>
 
-        <!-- Card 5: Hero / LiDAR (spans 2 cols) -->
-        <div class="dev-card dev-card--hero" data-type="lidar">
-          <div class="dev-card-hero-inner">
-            <div class="dev-card-hero-top">
-              <div>
-                <span class="dev-hero-firmware-badge">Novo Firmware Disponível</span>
-                <h3 class="dev-card-hero-name">Advanced Field LiDAR</h3>
-                <p class="dev-card-hero-sub">Station: Ridge Point High</p>
-              </div>
-              <div class="dev-card-hero-icon-wrap">
-                <span class="material-symbols-outlined">view_in_ar</span>
-              </div>
-            </div>
-            <div class="dev-card-hero-stats">
-              <div>
-                <p class="dev-hero-stat-label">Resolução</p>
-                <p class="dev-hero-stat-value">2.4cm / px</p>
-              </div>
-              <div>
-                <p class="dev-hero-stat-label">Força do Sinal</p>
-                <p class="dev-hero-stat-value">98 dBm</p>
-              </div>
-              <div>
-                <p class="dev-hero-stat-label">Próximo Scan</p>
-                <p class="dev-hero-stat-value">14:00 PM</p>
-              </div>
-            </div>
-          </div>
-          <!-- Decorative elements -->
-          <div class="dev-card-hero-glow"></div>
-          <div class="dev-card-hero-dots" aria-hidden="true"></div>
-        </div>
-
-        <!-- Card 6: AI Insight Node -->
-        <div class="dev-card dev-card--ai" data-type="nitrogen">
-          <div class="dev-card-top">
-            <div class="dev-card-ai-icon-wrap">
-              <span class="material-symbols-outlined">psychology</span>
-            </div>
-            <span class="dev-serial dev-serial--light">SN: FA-2024-888</span>
-          </div>
-          <h3 class="dev-card-name dev-card-name--light">Crop Health Hub</h3>
-          <p class="dev-card-model dev-card-model--light">Edge AI Processing Node</p>
-          <div class="dev-card-ai-insight">
-            <p class="dev-card-ai-insight-label">Sugestão da IA</p>
-            <p class="dev-card-ai-insight-text">"Anomalia detectada na pigmentação foliar. Verificação de nitrogênio recomendada."</p>
-          </div>
-        </div>
-
-        <!-- Add Device Placeholder -->
+        <!-- Adicionar Dispositivo -->
         <button class="dev-card-add" id="addDeviceBtn">
           <div class="dev-card-add-icon">
             <span class="material-symbols-outlined">add</span>
@@ -340,81 +235,44 @@
 
       </div><!-- /dev-grid -->
 
-      <!-- Registros de Conexão -->
+      <!-- Registros de Conexão — dinâmico -->
       <section class="dev-logs">
         <div class="dev-logs-header">
-          <h2 class="dev-logs-title">Registros de Conexão</h2>
-          <button class="dev-logs-more-btn" id="viewFullHistoryBtn">
-            Ver histórico completo
+          <h2 class="dev-logs-title">Registros de Leitura</h2>
+          <button class="dev-logs-more-btn" id="viewFullHistoryBtn" onclick="window.location.href='monitoring.html'">
+            Ver monitoramento completo
             <span class="material-symbols-outlined">arrow_forward</span>
           </button>
         </div>
 
         <div class="dev-logs-table">
-          <!-- Table Header -->
           <div class="dev-logs-head">
             <div>Dispositivo</div>
             <div>Evento</div>
             <div>Status</div>
             <div>Data/Hora</div>
           </div>
-          <!-- Table Body -->
-          <div class="dev-logs-body">
-
-            <div class="dev-log-row">
-              <div class="dev-log-device">North Field S1</div>
-              <div class="dev-log-event">Sincronização Bem-sucedida</div>
-              <div>
-                <span class="table-badge table-badge--active">SUCCESS</span>
-              </div>
-              <div class="dev-log-time">Hoje, 10:42</div>
+          <div class="dev-logs-body" id="devLogsBody">
+            <div style="padding:24px;text-align:center;color:#94a3b8;font-size:13px;font-family:Manrope,sans-serif;">
+              Carregando registros...
             </div>
-
-            <div class="dev-log-row">
-              <div class="dev-log-device">East Orchard 09</div>
-              <div class="dev-log-event">Timeout de Heartbeat</div>
-              <div>
-                <span class="table-badge table-badge--alert">FAILED</span>
-              </div>
-              <div class="dev-log-time">Hoje, 09:15</div>
-            </div>
-
-            <div class="dev-log-row">
-              <div class="dev-log-device">Central Well P1</div>
-              <div class="dev-log-event">Aviso de Tensão Baixa</div>
-              <div>
-                <span class="table-badge table-badge--warn">ALERT</span>
-              </div>
-              <div class="dev-log-time">Hoje, 08:30</div>
-            </div>
-
           </div>
         </div>
       </section>
 
-    </div><!-- /content-canvas -->
+    </div>
   </main>
 
-  <!-- Mobile Bottom Nav -->
   <nav class="bottom-nav">
-    <a class="bottom-nav-item" href="index.html">
-      <span class="material-symbols-outlined">dashboard</span>
-      <span>Início</span>
-    </a>
-    <a class="bottom-nav-item" href="monitoring.html">
-      <span class="material-symbols-outlined">monitoring</span>
-      <span>Dados</span>
-    </a>
-    <a class="bottom-nav-item bottom-nav-item--active" href="device.html">
-      <span class="material-symbols-outlined filled">router</span>
-      <span>Dispositivos</span>
-    </a>
-    <a class="bottom-nav-item" href="#">
-      <span class="material-symbols-outlined">person</span>
-      <span>Perfil</span>
-    </a>
+    <a class="bottom-nav-item" href="index.html"><span class="material-symbols-outlined">dashboard</span><span>Início</span></a>
+    <a class="bottom-nav-item" href="monitoring.html"><span class="material-symbols-outlined">monitoring</span><span>Dados</span></a>
+    <a class="bottom-nav-item bottom-nav-item--active" href="device.html"><span class="material-symbols-outlined filled">router</span><span>Dispositivos</span></a>
+    <a class="bottom-nav-item" href="alerts.html"><span class="material-symbols-outlined">notifications_active</span><span>Alertas</span></a>
+    <a class="bottom-nav-item" href="ia.html"><span class="material-symbols-outlined">psychology</span><span>AI</span></a>
   </nav>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="../js/script.js"></script>
+  <script src="../js/device.js"></script>
 </body>
 </html>
