@@ -55,9 +55,8 @@ async function exportarRelatorio() {
   }
 }
 
-const SUPABASE_URL_DASH = 'https://bydyipretbicpvbqmuvb.supabase.co';
-const SUPABASE_KEY_DASH = 'sb_publishable_2RPgrQBaMC4utot6oGU-gQ_jVeJ3a9k';
-const supabaseDash = window.supabase.createClient(SUPABASE_URL_DASH, SUPABASE_KEY_DASH);
+// Reutiliza o cliente Supabase já criado pelo script.js
+const supabaseDash = window._farmaiSupabase || window.supabase?.createClient('https://bydyipretbicpvbqmuvb.supabase.co', 'sb_publishable_2RPgrQBaMC4utot6oGU-gQ_jVeJ3a9k');
 
 // ─── Helpers ────────────────────────────────────────────────
 const soilPctDash = raw => (raw == null || Number(raw) >= 4095) ? null : Number(raw);
@@ -125,20 +124,20 @@ function gerarInsight(cls) {
 // ─── Carrega última leitura e atualiza cards ──────────────────
 async function atualizarDashboard() {
   try {
-    // Busca a última leitura com umid_solo válida (sensor no solo, não no ar)
-    const { data: dataValida, error: errValida } = await supabaseDash
-      .from('leituras_solo')
-      .select('created_at, sensor_id, temp_ar, umid_ar, umid_solo, luz_ambiente')
-      .lt('umid_solo', 4095)
-      .order('created_at', { ascending: false })
-      .limit(1);
-
-    // Busca a leitura mais recente para temperatura/umid_ar/luz (pode ter sensor no ar)
-    const { data, error } = await supabaseDash
-      .from('leituras_solo')
-      .select('created_at, sensor_id, temp_ar, umid_ar, umid_solo, luz_ambiente')
-      .order('created_at', { ascending: false })
-      .limit(1);
+    // Queries paralelas para reduzir latência
+    const [{ data: dataValida }, { data, error }] = await Promise.all([
+      supabaseDash
+        .from('leituras_solo')
+        .select('created_at, sensor_id, temp_ar, umid_ar, umid_solo, luz_ambiente')
+        .lt('umid_solo', 4095)
+        .order('created_at', { ascending: false })
+        .limit(1),
+      supabaseDash
+        .from('leituras_solo')
+        .select('created_at, sensor_id, temp_ar, umid_ar, umid_solo, luz_ambiente')
+        .order('created_at', { ascending: false })
+        .limit(1),
+    ]);
 
     if (error) { console.error('[Dashboard]', error); return; }
 

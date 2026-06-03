@@ -8,6 +8,8 @@
 const supabaseUrl = 'https://bydyipretbicpvbqmuvb.supabase.co';
 const supabaseKey = 'sb_publishable_2RPgrQBaMC4utot6oGU-gQ_jVeJ3a9k';
 const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+// Expõe o cliente para reuso nos demais scripts da página
+window._farmaiSupabase = supabaseClient;
 
 // 2. Busca as leituras mais recentes para preencher a tabela na página de monitoramento
 async function carregarLeituras() {

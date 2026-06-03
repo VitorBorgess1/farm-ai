@@ -5,9 +5,8 @@
    do script.js
    ============================================================ */
 
-const SUPABASE_URL_ALR = 'https://bydyipretbicpvbqmuvb.supabase.co';
-const SUPABASE_KEY_ALR = 'sb_publishable_2RPgrQBaMC4utot6oGU-gQ_jVeJ3a9k';
-const supabaseAlr = window.supabase.createClient(SUPABASE_URL_ALR, SUPABASE_KEY_ALR);
+// Reutiliza o cliente Supabase já criado pelo script.js
+const supabaseAlr = window._farmaiSupabase || window.supabase?.createClient('https://bydyipretbicpvbqmuvb.supabase.co', 'sb_publishable_2RPgrQBaMC4utot6oGU-gQ_jVeJ3a9k');
 
 const soilPctAlr = raw => (raw == null || Number(raw) >= 4095) ? null : Number(raw);
 
@@ -265,45 +264,43 @@ function renderUltimaLeitura(leitura, cls) {
 
 // ─── Inicialização principal ─────────────────────────────────
 async function initAlertas() {
-  // Última leitura válida de umid_solo
-  const { data: dataValida } = await supabaseAlr
-    .from('leituras_solo')
-    .select('created_at, temp_ar, umid_ar, umid_solo, luz_ambiente')
-    .lt('umid_solo', 4095)
-    .order('created_at', { ascending: false })
-    .limit(1);
-
-  // Leitura mais recente (para temp/umid_ar/luz)
-  const { data: dataRecente } = await supabaseAlr
-    .from('leituras_solo')
-    .select('created_at, temp_ar, umid_ar, umid_solo, luz_ambiente')
-    .order('created_at', { ascending: false })
-    .limit(1);
-
-  const recente = dataRecente?.[0] ?? null;
-  const valida  = dataValida?.[0]  ?? null;
-
-  const leitura = recente ? { ...recente, umid_solo: valida?.umid_solo ?? recente.umid_solo } : null;
-  const cls     = classificarLeitura(leitura);
-
-  // Gera e renderiza alertas
-  const alertas = gerarAlertas(cls, leitura);
-  renderFeedAtivo(alertas);
-  renderStatusSensor(recente, cls);
-  renderUltimaLeitura(leitura, cls);
-
-  // Últimos 7 dias para histórico e resumo
   const startDate = new Date();
   startDate.setDate(startDate.getDate() - 7);
 
-  const { data: semana } = await supabaseAlr
-    .from('leituras_solo')
-    .select('created_at, temp_ar, umid_ar, umid_solo, luz_ambiente')
-    .gte('created_at', startDate.toISOString())
-    .order('created_at', { ascending: false })
-    .limit(300);
+  // Todas as queries em paralelo
+  const [
+    { data: dataValida },
+    { data: dataRecente },
+    { data: semana },
+  ] = await Promise.all([
+    supabaseAlr
+      .from('leituras_solo')
+      .select('created_at, temp_ar, umid_ar, umid_solo, luz_ambiente')
+      .lt('umid_solo', 4095)
+      .order('created_at', { ascending: false })
+      .limit(1),
+    supabaseAlr
+      .from('leituras_solo')
+      .select('created_at, temp_ar, umid_ar, umid_solo, luz_ambiente')
+      .order('created_at', { ascending: false })
+      .limit(1),
+    supabaseAlr
+      .from('leituras_solo')
+      .select('created_at, temp_ar, umid_ar, umid_solo, luz_ambiente')
+      .gte('created_at', startDate.toISOString())
+      .order('created_at', { ascending: false })
+      .limit(300),
+  ]);
 
+  const recente = dataRecente?.[0] ?? null;
+  const valida  = dataValida?.[0]  ?? null;
+  const leitura = recente ? { ...recente, umid_solo: valida?.umid_solo ?? recente.umid_solo } : null;
+  const cls     = classificarLeitura(leitura);
   const leiturasSemana = semana || [];
+
+  renderFeedAtivo(gerarAlertas(cls, leitura));
+  renderStatusSensor(recente, cls);
+  renderUltimaLeitura(leitura, cls);
   renderResumoSemanal(leiturasSemana);
   renderHistorico(leiturasSemana);
 }

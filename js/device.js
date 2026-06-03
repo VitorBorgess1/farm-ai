@@ -3,9 +3,8 @@
    Página de Dispositivos: dados reais do ESP32 via Supabase
    ============================================================ */
 
-const SUPABASE_URL_DEV = 'https://bydyipretbicpvbqmuvb.supabase.co';
-const SUPABASE_KEY_DEV = 'sb_publishable_2RPgrQBaMC4utot6oGU-gQ_jVeJ3a9k';
-const supabaseDev = window.supabase.createClient(SUPABASE_URL_DEV, SUPABASE_KEY_DEV);
+// Reutiliza o cliente Supabase já criado pelo script.js
+const supabaseDev = window._farmaiSupabase || window.supabase?.createClient('https://bydyipretbicpvbqmuvb.supabase.co', 'sb_publishable_2RPgrQBaMC4utot6oGU-gQ_jVeJ3a9k');
 
 const soilPctDev = raw => (raw == null || Number(raw) >= 4095) ? null : Number(raw);
 
@@ -154,34 +153,34 @@ function renderLogs(leituras) {
 
 // ─── Inicialização ────────────────────────────────────────────
 async function initDevice() {
-  // Leitura mais recente (qualquer)
-  const { data: dataRecente } = await supabaseDev
-    .from('leituras_solo')
-    .select('created_at, sensor_id, temp_ar, umid_ar, umid_solo, luz_ambiente')
-    .order('created_at', { ascending: false })
-    .limit(100);
+  // Todas as queries em paralelo
+  const [
+    { data: dataRecente },
+    { data: dataValida },
+    { data: dataSensor },
+  ] = await Promise.all([
+    supabaseDev
+      .from('leituras_solo')
+      .select('created_at, sensor_id, temp_ar, umid_ar, umid_solo, luz_ambiente')
+      .order('created_at', { ascending: false })
+      .limit(100),
+    supabaseDev
+      .from('leituras_solo')
+      .select('created_at, umid_solo')
+      .lt('umid_solo', 4095)
+      .order('created_at', { ascending: false })
+      .limit(1),
+    supabaseDev
+      .from('sensores')
+      .select('id, status_bateria')
+      .eq('id', 1)
+      .limit(1),
+  ]);
 
-  const leituras = dataRecente || [];
-  const recente  = leituras[0] ?? null;
-
-  // Leitura mais recente com umid_solo válida
-  const { data: dataValida } = await supabaseDev
-    .from('leituras_solo')
-    .select('created_at, umid_solo')
-    .lt('umid_solo', 4095)
-    .order('created_at', { ascending: false })
-    .limit(1);
-
+  const leituras      = dataRecente || [];
+  const recente       = leituras[0] ?? null;
   const leituraValida = dataValida?.[0] ?? null;
-
-  // Dados do sensor (bateria)
-  const { data: dataSensor } = await supabaseDev
-    .from('sensores')
-    .select('id, status_bateria')
-    .eq('id', 1)
-    .limit(1);
-
-  const sensor = dataSensor?.[0] ?? null;
+  const sensor        = dataSensor?.[0] ?? null;
 
   // Online se última leitura < 60min
   const diffMin = recente
