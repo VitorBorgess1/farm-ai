@@ -115,24 +115,24 @@ function formatarDataHora(isoString) {
     });
 }
 
-/* ── Classificação da umidade do solo (ADC capacitivo) ────────
-   IMPORTANTE: sensor capacitivo opera de forma INVERTIDA.
-   ADC alto = solo SECO | ADC baixo = solo ENCHARCADO
+/* ── Classificação da umidade do solo (valor já em %) ─────────
+   Valores convertidos de ADC para percentual real no banco.
+   4095 (sensor no ar) é filtrado antes de chegar aqui.
    Faixas:
-     < 1000     → Encharcado  (crítico)
-     1000–1800  → Úmido       (atenção)
-     1800–3000  → Ideal       ✓
-     3000–3500  → Seco        (atenção)
-     > 3500     → Muito seco  (crítico)
+     < 15%    → Muito seco  (crítico)
+     15–25%   → Seco        (atenção)
+     25–70%   → Ideal       ✓
+     70–85%   → Úmido       (atenção)
+     > 85%    → Encharcado  (crítico)
    ──────────────────────────────────────────────────────────── */
 function classificarUmidadeSolo(valor) {
     const v = parseFloat(valor);
-    if (isNaN(v)) return { label: 'Sem dados',     nivel: 'sem_dados', pontos: null  };
-    if (v < 1000) return { label: 'Encharcado',    nivel: 'critico',   pontos: 40    };
-    if (v < 1800) return { label: 'Úmido',         nivel: 'atencao',   pontos: 70    };
-    if (v <= 3000) return { label: 'Ideal',        nivel: 'ideal',     pontos: 100   };
-    if (v <= 3500) return { label: 'Seco',         nivel: 'atencao',   pontos: 70    };
-    return              { label: 'Muito seco',     nivel: 'critico',   pontos: 40    };
+    if (isNaN(v) || v >= 4095) return { label: 'Sem dados',  nivel: 'sem_dados', pontos: null };
+    if (v < 15)  return { label: 'Muito seco',  nivel: 'critico',   pontos: 40  };
+    if (v < 25)  return { label: 'Seco',        nivel: 'atencao',   pontos: 70  };
+    if (v <= 70) return { label: 'Ideal',       nivel: 'ideal',     pontos: 100 };
+    if (v <= 85) return { label: 'Úmido',       nivel: 'atencao',   pontos: 70  };
+    return             { label: 'Encharcado',   nivel: 'critico',   pontos: 40  };
 }
 
 /* ── Classificação da temperatura do ar (°C) ──────────────────
@@ -275,34 +275,34 @@ function nivelParaDotClass(nivel) {
    Recebem o objeto classificado — nunca os valores brutos.
    ──────────────────────────────────────────────────────────── */
 function textoUmidadeSolo(cls) {
-    const v = cls.umid_solo;
+    const v = parseFloat(cls.umid_solo);
     switch (cls.nivel_umid_solo) {
         case 'critico':
-            if (v < 1000) return {
+            if (v > 85) return {
                 prioridade: 'Alta Prioridade',
-                titulo: `Solo encharcado detectado (ADC: ${v})`,
+                titulo: `Solo encharcado detectado (${v.toFixed(1)}%)`,
                 desc: 'Excesso de água no solo. Suspenda a irrigação imediatamente e avalie a drenagem. Risco elevado de apodrecimento radicular e proliferação de fungos.',
             };
             return {
                 prioridade: 'Alta Prioridade',
-                titulo: `Solo muito seco detectado (ADC: ${v})`,
+                titulo: `Solo muito seco detectado (${v.toFixed(1)}%)`,
                 desc: 'Umidade do solo criticamente baixa. Recomenda-se irrigação nas próximas horas para evitar estresse hídrico severo e queda de produtividade.',
             };
         case 'atencao':
-            if (v < 1800) return {
+            if (v > 70) return {
                 prioridade: 'Atenção',
-                titulo: `Solo úmido, acima da faixa ideal (ADC: ${v})`,
-                desc: 'Solo com umidade levemente elevada. Monitore a drenagem e evite nova irrigação até retornar à faixa ideal (ADC 1800–3000).',
+                titulo: `Solo úmido, acima da faixa ideal (${v.toFixed(1)}%)`,
+                desc: 'Solo com umidade levemente elevada. Monitore a drenagem e evite nova irrigação até retornar à faixa ideal (25–70%).',
             };
             return {
                 prioridade: 'Atenção',
-                titulo: `Solo seco, abaixo da faixa ideal (ADC: ${v})`,
+                titulo: `Solo seco, abaixo da faixa ideal (${v.toFixed(1)}%)`,
                 desc: 'Umidade levemente abaixo do recomendado. Considere irrigação moderada e acompanhe a evolução nas próximas horas.',
             };
         case 'ideal':
             return {
                 prioridade: 'Normal',
-                titulo: `Umidade do solo na faixa ideal (ADC: ${v})`,
+                titulo: `Umidade do solo na faixa ideal (${v.toFixed(1)}%)`,
                 desc: 'Solo com umidade adequada para a maioria das culturas. Manter monitoramento contínuo.',
             };
         default:
@@ -909,9 +909,9 @@ Always make clear that recommendations should be validated by a qualified agrono
 The system collects 4 real sensor readings from the field. Before each user message you receive the latest values:
 - temp_ar: Air temperature in °C
 - umid_ar: Relative air humidity in %
-- umid_solo: Soil moisture as raw ADC value (capacitive sensor)
-  → HIGH value = DRY soil | LOW value = WET soil
-  → Healthy range: 1500–3000 | >3500 = very dry | <1000 = waterlogged
+- umid_solo: Soil moisture already converted to percentage (0–100%)
+  → Values >= 4095 mean sensor is not in soil (invalid)
+  → Healthy range: 25–70% | <15% = very dry (irrigate) | >85% = waterlogged
 - luz_ambiente: Ambient light as raw ADC value
   → Higher = more light | Useful range: 500–3000
 
@@ -924,7 +924,7 @@ If data is older than 1 day, warn the farmer and suggest a new reading.
 When the crop is "not informed", base your analysis on these general ranges:
 - Air temperature: 15–35°C (below 10°C or above 38°C = stress for most crops)
 - Air humidity: 40–80% (below 30% = very dry; above 85% = fungal risk)
-- Soil moisture (ADC): 1500–3000 (healthy); >3500 = irrigate; <1000 = drainage needed
+- Soil moisture (%): 25–70% (healthy); <15% = irrigate; >85% = drainage needed
 - Ambient light (ADC): 500–3000 (adequate for most crops)
 Always tell the farmer these are generic values and analysis improves when the crop is specified.
 
@@ -1102,7 +1102,7 @@ Use general agronomic best practices. Make clear the answer is generic due to mi
             contextoSensores = `[SENSOR DATA — collected ${dataColeta}]:${staleness}
 - Air temperature (temp_ar): ${ultimo?.temp_ar ?? 'N/A'}°C
 - Air humidity (umid_ar): ${ultimo?.umid_ar ?? 'N/A'}%
-- Soil moisture ADC (umid_solo): ${ultimo?.umid_solo ?? 'N/A'} (higher = drier)
+- Soil moisture % (umid_solo): ${ultimo?.umid_solo ?? 'N/A'}% (25-70% = healthy)
 - Ambient light ADC (luz_ambiente): ${ultimo?.luz_ambiente ?? 'N/A'}
 [CROP]: ${cultura}`;
         }

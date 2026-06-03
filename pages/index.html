@@ -99,13 +99,13 @@
           <div class="dash-hero-status">
             <span class="status-badge status-badge--healthy">
               <span class="status-dot"></span>
-              Saúde
+              <span id="dashStatusLabel">Saúde</span>
             </span>
-            <span class="dash-hero-sync">Última sincronização: 2 minutos atrás</span>
+            <span class="dash-hero-sync" id="dashLastSync">Carregando...</span>
           </div>
         </div>
         <div class="dash-hero-actions">
-          <button class="btn-secondary btn-icon">
+          <button class="btn-secondary btn-icon" id="exportReportBtn">
             <span class="material-symbols-outlined">file_download</span>
             Exportar Relatório
           </button>
@@ -125,53 +125,55 @@
             <div class="icon-box icon-primary">
               <span class="material-symbols-outlined">humidity_mid</span>
             </div>
-            <span class="badge badge-primary-sm">Normal</span>
+            <span class="badge badge-primary-sm" id="dashUmidSoloBadge">—</span>
           </div>
           <div class="stat-card-body">
             <p class="stat-card-label">Umidade do Solo</p>
-            <h3 class="stat-card-value">42<span class="stat-card-unit">%</span></h3>
+            <h3 class="stat-card-value">
+              <span id="dashUmidSoloValor">—</span><span class="stat-card-unit">%</span>
+            </h3>
           </div>
           <div class="stat-card-bar">
-            <div class="stat-card-bar-fill stat-card-bar-fill--primary" style="width: 42%"></div>
+            <div class="stat-card-bar-fill stat-card-bar-fill--primary" id="dashUmidSoloBar" style="width: 0%"></div>
           </div>
         </div>
 
-        <!-- pH Level -->
+        <!-- Temperatura do Ar (substituiu pH) -->
         <div class="stat-card-box">
           <div class="stat-card-header">
             <div class="icon-box icon-secondary">
-              <span class="material-symbols-outlined">science</span>
+              <span class="material-symbols-outlined">thermostat</span>
             </div>
-            <span class="badge badge-secondary-sm">Ideal</span>
+            <span class="badge badge-secondary-sm" id="dashTempBadge">—</span>
           </div>
           <div class="stat-card-body">
-            <p class="stat-card-label">Nível de pH</p>
-            <h3 class="stat-card-value">6.5<span class="stat-card-unit">pH</span></h3>
+            <p class="stat-card-label">Temperatura do Ar</p>
+            <h3 class="stat-card-value">
+              <span id="dashTempValor">—</span><span class="stat-card-unit">°C</span>
+            </h3>
           </div>
-          <div class="ph-scale-labels">
-            <span>Ácido</span>
-            <span>Alcalino</span>
-          </div>
-          <div class="ph-scale-bar">
-            <div class="ph-scale-indicator" style="left: 48%"></div>
+          <div class="stat-card-bar">
+            <div class="stat-card-bar-fill stat-card-bar-fill--secondary" id="dashTempBar" style="width: 0%"></div>
           </div>
         </div>
 
-        <!-- Luminosity -->
+        <!-- Luminosidade -->
         <div class="stat-card-box">
           <div class="stat-card-header">
             <div class="icon-box icon-tertiary">
               <span class="material-symbols-outlined filled">wb_sunny</span>
             </div>
-            <span class="badge badge-error-sm">Atenção</span>
+            <span class="badge badge-secondary-sm" id="dashLuzBadge">—</span>
           </div>
           <div class="stat-card-body">
             <p class="stat-card-label">Luminosidade</p>
-            <h3 class="stat-card-value">70<span class="stat-card-unit">%</span></h3>
+            <h3 class="stat-card-value">
+              <span id="dashLuzValor">—</span><span class="stat-card-unit">%</span>
+            </h3>
           </div>
-          <div class="stat-card-warning">
-            <span class="material-symbols-outlined">trending_up</span>
-            12% acima do pico de ontem
+          <div class="stat-card-warning" id="dashLuzWarning" style="display:none;">
+            <span class="material-symbols-outlined">info</span>
+            <span id="dashLuzWarningText"></span>
           </div>
         </div>
 
@@ -182,31 +184,70 @@
 
         <!-- Field Map -->
         <div class="field-map-card">
-          <div class="field-map-img">
-            <img alt="Vista aérea de campos agrícolas"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQX82nIdCBcyV9TdXqap6pH0Kv8H4120FSCqCxFlFkYoQRp7oLcIn7LET2UpKGkX58yxKsgIVpCLQBNwr_9rx39qTZaDLyBlcISmYk6DtkOllHI4hA2Ngc3Z-eprzM5ZGhSfG9Tcj4F4HfZy58RRNSZfCjImU_6vqF1BlMc9zckXiOg1awS8ata1PEKtJgaFQ-OLRM13WZ_lDW8P5ZQdwVy54KJW5kZruanojVKZ1udiWIpYMqg_a2plg1XQlT31a-gUUcLZnoNMFx"/>
+          <div class="field-map-img" id="fieldMapImg" style="position:relative;transition:filter 0.5s ease;">
+            <img id="fieldMapImage" alt="Vista aérea de campos agrícolas"
+              src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800&q=80"
+              style="width:100%;height:100%;object-fit:cover;display:block;transition:filter 0.5s ease;"/>
+            <!-- NDVI overlay: gradient verde sobre a imagem -->
+            <div id="ndviOverlay" style="
+              display:none;position:absolute;inset:0;
+              background:linear-gradient(135deg,
+                rgba(34,197,94,0.55) 0%,
+                rgba(250,204,21,0.45) 35%,
+                rgba(239,68,68,0.40) 60%,
+                rgba(34,197,94,0.50) 100%);
+              mix-blend-mode:multiply;pointer-events:none;
+            "></div>
+            <!-- Heatmap overlay: gradiente de calor -->
+            <div id="heatmapOverlay" style="
+              display:none;position:absolute;inset:0;
+              background:radial-gradient(ellipse at 45% 55%,
+                rgba(239,68,68,0.6) 0%,
+                rgba(249,115,22,0.5) 25%,
+                rgba(250,204,21,0.4) 50%,
+                rgba(34,197,94,0.2) 75%,
+                transparent 100%);
+              pointer-events:none;
+            "></div>
+            <!-- Legenda NDVI -->
+            <div id="ndviLegend" style="
+              display:none;position:absolute;bottom:48px;left:12px;
+              background:rgba(2,8,23,0.75);border-radius:8px;padding:8px 12px;
+              backdrop-filter:blur(4px);
+            ">
+              <p style="font-size:10px;color:#94a3b8;margin:0 0 6px;font-family:Manrope,sans-serif;font-weight:600;letter-spacing:.5px;">NDVI</p>
+              <div style="display:flex;align-items:center;gap:6px;">
+                <div style="width:80px;height:8px;border-radius:4px;background:linear-gradient(to right,#ef4444,#facc15,#22c55e);"></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;width:80px;margin-top:2px;">
+                <span style="font-size:9px;color:#64748b;font-family:Manrope,sans-serif;">Stress</span>
+                <span style="font-size:9px;color:#64748b;font-family:Manrope,sans-serif;">Saudável</span>
+              </div>
+            </div>
+            <!-- Legenda Mapa de Calor -->
+            <div id="heatLegend" style="
+              display:none;position:absolute;bottom:48px;left:12px;
+              background:rgba(2,8,23,0.75);border-radius:8px;padding:8px 12px;
+              backdrop-filter:blur(4px);
+            ">
+              <p style="font-size:10px;color:#94a3b8;margin:0 0 6px;font-family:Manrope,sans-serif;font-weight:600;letter-spacing:.5px;">TEMPERATURA</p>
+              <div style="display:flex;align-items:center;gap:6px;">
+                <div style="width:80px;height:8px;border-radius:4px;background:linear-gradient(to right,#22c55e,#facc15,#ef4444);"></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;width:80px;margin-top:2px;">
+                <span style="font-size:9px;color:#64748b;font-family:Manrope,sans-serif;">Frio</span>
+                <span style="font-size:9px;color:#64748b;font-family:Manrope,sans-serif;">Quente</span>
+              </div>
+            </div>
           </div>
-          <!-- Heatmap Overlay with sensors -->
+          <!-- Sensor overlay — apenas ESP32 Sensor 1 -->
           <div class="field-map-overlay">
-            <!-- Sensor 04 -->
-            <div class="sensor-marker" style="top: 20%; left: 30%;">
+            <div class="sensor-marker" style="top: 35%; left: 45%;">
               <div class="sensor-dot sensor-dot--primary sensor-dot--pulse"></div>
               <div class="sensor-tooltip">
-                <p class="sensor-tooltip-label">Nó Sensor 04</p>
-                <p class="sensor-tooltip-value">44% Umidade</p>
+                <p class="sensor-tooltip-label">ESP32 — Sensor 1</p>
+                <p class="sensor-tooltip-value" id="mapSensorTooltip">Carregando...</p>
               </div>
-            </div>
-            <!-- Sensor 12 -->
-            <div class="sensor-marker" style="top: 60%; left: 70%;">
-              <div class="sensor-dot sensor-dot--error"></div>
-              <div class="sensor-tooltip">
-                <p class="sensor-tooltip-label">Nó Sensor 12</p>
-                <p class="sensor-tooltip-value sensor-tooltip-value--error">Alerta de pH Baixo</p>
-              </div>
-            </div>
-            <!-- Sensor generic -->
-            <div class="sensor-marker" style="top: 45%; left: 50%;">
-              <div class="sensor-dot sensor-dot--primary"></div>
             </div>
           </div>
           <!-- Map Controls -->
@@ -219,18 +260,18 @@
           </div>
           <!-- Field Layers Legend -->
           <div class="map-legend">
-            <h4 class="map-legend-title">Camadas do Campo</h4>
+            <h4 class="map-legend-title">Status do Sensor</h4>
             <div class="map-legend-item">
-              <span class="map-legend-dot map-legend-dot--primary"></span>
-              <span>Solo Ideal</span>
+              <span style="width:8px;height:8px;border-radius:50%;background:#4ade80;display:inline-block;flex-shrink:0;"></span>
+              <span id="mapLegendUmid">Umidade: —</span>
             </div>
             <div class="map-legend-item">
-              <span class="map-legend-dot map-legend-dot--secondary"></span>
-              <span>Alto Crescimento</span>
+              <span style="width:8px;height:8px;border-radius:50%;background:#60a5fa;display:inline-block;flex-shrink:0;"></span>
+              <span id="mapLegendTemp">Temperatura: —</span>
             </div>
             <div class="map-legend-item">
-              <span class="map-legend-dot map-legend-dot--error"></span>
-              <span>Falha de Irrigação</span>
+              <span style="width:8px;height:8px;border-radius:50%;background:#4ade80;display:inline-block;flex-shrink:0;" id="mapLegendStatusDot"></span>
+              <span id="mapLegendStatus">Status: —</span>
             </div>
           </div>
         </div>
@@ -239,41 +280,22 @@
         <div class="trends-card">
           <div class="trends-header">
             <h3 class="trends-title">Tendências de Umidade</h3>
-            <select class="trends-select">
-              <option>Tempo Real</option>
-              <option>Últimas 24h</option>
-              <option>Últimos 7 dias</option>
+            <select class="trends-select" id="trendsSelect">
+              <option value="24h">Últimas 24h</option>
+              <option value="7d" selected>Últimos 7 dias</option>
             </select>
           </div>
-          <div class="trends-chart">
-            <!-- Grid lines -->
-            <div class="chart-grid">
-              <div class="chart-grid-row"><span>80%</span><div class="chart-grid-line"></div></div>
-              <div class="chart-grid-row"><span>60%</span><div class="chart-grid-line"></div></div>
-              <div class="chart-grid-row"><span>40%</span><div class="chart-grid-line"></div></div>
-              <div class="chart-grid-row"><span>20%</span><div class="chart-grid-line"></div></div>
-            </div>
-            <!-- SVG Line -->
-            <svg class="chart-svg" viewBox="0 0 400 200" preserveAspectRatio="none">
-              <defs>
-                <linearGradient id="moistGrad" x1="0%" x2="0%" y1="0%" y2="100%">
-                  <stop offset="0%" style="stop-color:#002d1c;stop-opacity:1"/>
-                  <stop offset="100%" style="stop-color:#002d1c;stop-opacity:0"/>
-                </linearGradient>
-              </defs>
-              <path class="chart-area" d="M0,150 Q50,130 100,145 T200,100 T300,120 T400,80 L400,200 L0,200 Z" fill="url(#moistGrad)"/>
-              <path class="chart-line" d="M0,150 Q50,130 100,145 T200,100 T300,120 T400,80" fill="none"/>
-              <circle class="chart-dot" cx="400" cy="80" r="6"/>
-            </svg>
+          <div class="trends-chart" id="trendsChartContainer" style="position:relative;height:160px;">
+            <canvas id="trendsCanvas"></canvas>
           </div>
           <div class="trends-stats">
             <div class="trends-stat-box">
               <p class="trends-stat-label">Média</p>
-              <p class="trends-stat-value">41.2%</p>
+              <p class="trends-stat-value" id="trendsMedia">—</p>
             </div>
             <div class="trends-stat-box">
-              <p class="trends-stat-label">Volatilidade</p>
-              <p class="trends-stat-value">Baixa</p>
+              <p class="trends-stat-label">Tendência</p>
+              <p class="trends-stat-value" id="trendsTendencia">—</p>
             </div>
           </div>
         </div>
@@ -291,11 +313,10 @@
             <span class="material-symbols-outlined">auto_awesome</span>
             <h3>Insight de IA do Dia</h3>
           </div>
-          <p class="ai-insight-text">
-            "Modelos de precipitação indicam 70% de chance de chuva em 48 horas. Recomendamos
-            <strong>suspender a irrigação manual</strong> na Seção B até sexta-feira para evitar saturação."
+          <p class="ai-insight-text" id="aiInsightText">
+            Analisando dados dos sensores...
           </p>
-          <button class="btn-insight">Aplicar Recomendação Inteligente</button>
+          <button class="btn-insight" id="aiInsightBtn">Aplicar Recomendação Inteligente</button>
         </div>
         <div class="ai-insight-glow"></div>
       </section>
@@ -308,6 +329,8 @@
     <span class="material-symbols-outlined">add</span>
   </button>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="../js/script.js"></script>
+  <script src="../js/dashboard.js"></script>
 </body>
 </html>
