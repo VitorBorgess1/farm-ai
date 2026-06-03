@@ -69,18 +69,39 @@ async function carregarLeituras() {
 
 // 3. Busca os dados reais dos sensores para alimentar a página de IA
 async function buscarDadosSoloParaIA() {
-    const { data, error } = await supabaseClient
+    // Busca a última leitura com umid_solo válido (sensor no solo, não no ar)
+    const { data: dataValida, error: errValida } = await supabaseClient
+        .from('leituras_solo')
+        .select('created_at, temp_ar, umid_ar, umid_solo, luz_ambiente')
+        .lt('umid_solo', 4095)
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+    // Busca a leitura mais recente para temp_ar, umid_ar e luz_ambiente
+    const { data: dataRecente, error: errRecente } = await supabaseClient
         .from('leituras_solo')
         .select('created_at, temp_ar, umid_ar, umid_solo, luz_ambiente')
         .order('created_at', { ascending: false })
-        .limit(10);
+        .limit(1);
 
-    if (error) {
-        console.error('Erro ao buscar dados para IA:', error);
+    if (errValida || errRecente) {
+        console.error('Erro ao buscar dados para IA:', errValida || errRecente);
         return [];
     }
 
-    return data;
+    const recente = dataRecente?.[0] ?? null;
+    const valida  = dataValida?.[0]  ?? null;
+
+    if (!recente) return [];
+
+    // Mescla: umid_solo da leitura válida, restante da mais recente
+    const leitura = {
+        ...recente,
+        umid_solo: valida?.umid_solo ?? recente.umid_solo,
+        created_at: recente.created_at,
+    };
+
+    return [leitura];
 }
 
 /* ════════════════════════════════════════════════════════════
